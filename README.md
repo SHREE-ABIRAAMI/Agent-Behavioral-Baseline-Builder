@@ -185,3 +185,11 @@ docker-compose up --build
 ## 📜 License & Compliance
 
 Developed for enterprise AI governance and security monitoring. Distributed under the MIT License.
+
+---
+
+## 👩‍💻 Author & Lead Architect
+
+**SHREE ABIRAAMI M**  
+*Creator & Developer — Agent Behavioral Baseline Builder (AB³)*  
+🔗 [GitHub Profile](https://github.com/SHREE-ABIRAAMI)
