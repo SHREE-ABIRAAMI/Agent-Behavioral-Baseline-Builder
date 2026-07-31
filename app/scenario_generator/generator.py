@@ -179,12 +179,25 @@ def generate_procedural_scenarios(agent_id: str, description: str, tools: List[D
     return scenarios
 
 def generate_scenarios(agent_id: str, system_prompt: str, tools: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    """Main scenario generation entrypoint."""
+    """Main scenario generation entrypoint enforcing exactly 50 scenarios."""
     scenarios = generate_scenarios_via_llm(agent_id, system_prompt, tools)
     if not scenarios or len(scenarios) < 10:
         logger.info(f"Using procedural synthesizer for {agent_id}")
         scenarios = generate_procedural_scenarios(agent_id, system_prompt, tools)
+    
+    # Guarantee exactly 50 scenarios
+    if len(scenarios) < 50:
+        extra = generate_procedural_scenarios(agent_id, system_prompt, tools)
+        needed = 50 - len(scenarios)
+        for idx, item in enumerate(extra[:needed]):
+            item_copy = dict(item)
+            item_copy["scenario_id"] = len(scenarios) + 1
+            scenarios.append(item_copy)
+    elif len(scenarios) > 50:
+        scenarios = scenarios[:50]
+        
     return scenarios
+
 
 def cluster_scenarios(scenarios: List[Dict[str, Any]], num_clusters: int = 3) -> Dict[str, Any]:
     """Clusters synthetic scenarios into Intent Types using TF-IDF and K-Means."""

@@ -117,17 +117,14 @@ class TelemetryMonitor:
             both_registered = (curr_state in registered_tools) and (next_state in registered_tools)
 
             if prob == 0.0:
-                if both_registered:
-                    penalties.append(0.0)
-                else:
-                    penalties.append(1.0)
-                    if not (curr_state == "[START]" and next_state == "[END]"):
-                        unexpected.append({
-                            "from_state": curr_state,
-                            "to_state": next_state,
-                            "probability": 0.0,
-                            "description": f"Hijacked transition: '{curr_state}' ➔ '{next_state}' (Unregistered Tool)"
-                        })
+                penalties.append(1.0)
+                if not (curr_state == "[START]" and next_state == "[END]"):
+                    unexpected.append({
+                        "from_state": curr_state,
+                        "to_state": next_state,
+                        "probability": 0.0,
+                        "description": f"Unexpected transition: '{curr_state}' ➔ '{next_state}' (Unobserved Sequence)"
+                    })
             else:
                 penalties.append(1.0 - prob)
 
