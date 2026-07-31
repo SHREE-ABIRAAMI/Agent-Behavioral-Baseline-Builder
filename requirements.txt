@@ -17,3 +17,4 @@ redis>=5.0.0
 pytest>=7.0.0
 plotly>=5.15.0
 pandas>=2.0.0
+gradio>=4.0.0
