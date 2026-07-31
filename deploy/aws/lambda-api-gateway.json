@@ -1,0 +1,28 @@
+{
+  "$schema": "https://serverless.com/framework/serverless.json",
+  "service": "agent-baseline-proxy",
+  "provider": {
+    "name": "aws",
+    "runtime": "python3.11",
+    "stage": "prod",
+    "region": "us-east-1",
+    "environment": {
+      "USE_AWS": "true",
+      "DYNAMODB_TABLE_PREFIX": "agent_baseline",
+      "REDIS_HOST": "${self:custom.redisEndpoint}"
+    }
+  },
+  "functions": {
+    "monitorProxy": {
+      "handler": "app.main.app",
+      "events": [
+        {
+          "http": {
+            "path": "/{proxy+}",
+            "method": "ANY"
+          }
+        }
+      ]
+    }
+  }
+}

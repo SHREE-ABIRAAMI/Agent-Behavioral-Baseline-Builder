@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AB³ — Agent Behavioral Baseline Builder</title>
+    <!-- Google Fonts & Material Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <!-- Chart.js for Seismograph -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="css/style.css?v=4.0">
+</head>
+<body>
+    <!-- Ambient Maroon & Copper Lighting Blobs -->
+    <div class="aurora-blob aurora-1"></div>
+    <div class="aurora-blob aurora-2"></div>
+    <div class="aurora-blob aurora-3"></div>
+
+    <!-- Mobile Top Navigation Header -->
+    <header class="mobile-top-bar">
+        <div class="mobile-brand">
+            <svg class="custom-app-logo mini" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M50 8L88 24V48C88 71.2 71.8 92.4 50 98C28.2 92.4 12 71.2 12 48V24L50 8Z" fill="url(#logo-grad-m)" stroke="#991B1B" stroke-width="3.5"/>
+                <circle cx="50" cy="46" r="18" stroke="#D97706" stroke-width="2.5" stroke-dasharray="4 3"/>
+                <circle cx="50" cy="46" r="8" fill="#991B1B"/>
+                <path d="M24 52L38 52L44 34L52 64L58 42L64 52L76 52" stroke="#F59E0B" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                <defs>
+                    <linearGradient id="logo-grad-m" x1="12" y1="8" x2="88" y2="98" gradientUnits="userSpaceOnUse">
+                        <stop offset="0%" stop-color="#991B1B" stop-opacity="0.95"/>
+                        <stop offset="100%" stop-color="#450A0A" stop-opacity="0.98"/>
+                    </linearGradient>
+                </defs>
+            </svg>
+            <span class="mobile-title">AB³ PLATFORM</span>
+        </div>
+        <button id="mobile-menu-toggle" class="btn-icon" onclick="window.aegisToggleDrawer(true)">
+            <span class="material-icons-round">menu</span>
+        </button>
+    </header>
+
+    <div class="app-layout">
+        <!-- LEFT SIDEBAR DASHBOARD NAVIGATION -->
+        <aside class="sidebar-nav" id="sidebar-drawer">
+            <!-- Sidebar Header & AB³ SVG Logo -->
+            <div class="sidebar-brand">
+                <div class="logo-box">
+                    <svg class="custom-app-logo" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M50 8L88 24V48C88 71.2 71.8 92.4 50 98C28.2 92.4 12 71.2 12 48V24L50 8Z" fill="url(#logo-grad-s)" stroke="#991B1B" stroke-width="3.5"/>
+                        <circle cx="50" cy="46" r="18" stroke="#D97706" stroke-width="2.5" stroke-dasharray="4 3"/>
+                        <circle cx="50" cy="46" r="8" fill="#991B1B"/>
+                        <path d="M24 52L38 52L44 34L52 64L58 42L64 52L76 52" stroke="#F59E0B" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                        <defs>
+                            <linearGradient id="logo-grad-s" x1="12" y1="8" x2="88" y2="98" gradientUnits="userSpaceOnUse">
+                                <stop offset="0%" stop-color="#991B1B" stop-opacity="0.95"/>
+                                <stop offset="100%" stop-color="#450A0A" stop-opacity="0.98"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
+                <div class="brand-text">
+                    <h2>AB<sup>3</sup></h2>
+                    <p>Agent Behavioral Baseline Builder</p>
+                </div>
+                <button id="sidebar-close-btn" class="btn-icon mobile-only" onclick="window.aegisToggleDrawer(false)">
+                    <span class="material-icons-round">close</span>
+                </button>
+            </div>
+
+            <!-- Target Selection Widget -->
+            <div class="sidebar-widget">
+                <label for="agent-preset" class="widget-label">
+                    <span class="material-icons-round text-primary">smart_toy</span> Target AI System
+                </label>
+                <select id="agent-preset" class="form-control sidebar-select">
+                    <option value="db_agent">Customer DB Worker (Default)</option>
+                    <option value="sec_agent">Security Patching Worker</option>
+                    <option value="custom">-- Custom Blueprint --</option>
+                </select>
+            </div>
+
+            <!-- Left Navigation Menu -->
+            <nav class="sidebar-menu">
+                <button class="nav-item active" data-tab="tab-welcome" onclick="window.aegisGotoTab('tab-welcome')">
+                    <span class="material-icons-round">shield</span>
+                    <span>Home Overview</span>
+                </button>
+                <button class="nav-item" data-tab="tab-profiler" onclick="window.aegisGotoTab('tab-profiler')">
+                    <span class="material-icons-round">tune</span>
+                    <span>1. Behavioral Profiler</span>
+                </button>
+                <button class="nav-item" data-tab="tab-markov" onclick="window.aegisGotoTab('tab-markov')">
+                    <span class="material-icons-round">hub</span>
+                    <span>2. Markov Transition Graph</span>
+                </button>
+                <button class="nav-item" data-tab="tab-clusters" onclick="window.aegisGotoTab('tab-clusters')">
+                    <span class="material-icons-round">bubble_chart</span>
+                    <span>3. Workload Baseline Clusters</span>
+                </button>
+                <button class="nav-item" data-tab="tab-monitor" onclick="window.aegisGotoTab('tab-monitor')">
+                    <span class="material-icons-round">visibility</span>
+                    <span>4. Real-Time Monitor</span>
+                </button>
+                <button class="nav-item" data-tab="tab-seismograph" onclick="window.aegisGotoTab('tab-seismograph')">
+                    <span class="material-icons-round">show_chart</span>
+                    <span>5. Anomaly Seismograph</span>
+                </button>
+                <button class="nav-item" data-tab="tab-drift" onclick="window.aegisGotoTab('tab-drift')">
+                    <span class="material-icons-round">auto_mode</span>
+                    <span>6. Drift Detector &amp; Refresh</span>
+                </button>
+            </nav>
+
+            <!-- Sidebar Bottom Status & Metrics -->
+            <div class="sidebar-footer">
+                <div class="status-pill online" id="sidebar-proxy-status">
+                    <span class="status-dot"></span>
+                    <span id="sidebar-proxy-status-text">AB³ Proxy Active</span>
+                </div>
+                <a href="/metrics" target="_blank" class="btn-metrics-link" title="Open Prometheus Metrics Endpoint">
+                    <span class="material-icons-round">query_stats</span>
+                    Prometheus Metrics
+                </a>
+            </div>
+        </aside>
+
+        <!-- RIGHT MAIN DASHBOARD CONTENT AREA -->
+        <main class="main-content">
+            <!-- Top Header Bar with DUAL NAVIGATION BUTTONS AT THE TOP-LEFT CORNER -->
+            <header class="top-header">
+                <div class="top-header-left">
+                    <!-- BACK TO PREVIOUS PAGE & HOME BUTTONS -->
+                    <div class="nav-buttons-left hidden" id="top-nav-btn-group">
+                        <button id="top-back-btn" class="btn btn-secondary btn-sm back-btn-left" title="Back to previous page" onclick="window.aegisGoBack()">
+                            <span class="material-icons-round">arrow_back</span>
+                            Back
+                        </button>
+                        <button id="top-home-btn" class="btn btn-secondary btn-sm home-btn-left" title="Return to home page" onclick="window.aegisGoHome()">
+                            <span class="material-icons-round">home</span>
+                            Home
+                        </button>
+                    </div>
+
+                    <div class="page-title-area">
+                        <h1 id="current-page-title">AB<sup>3</sup> - Agent Behavioral Baseline Builder</h1>
+                        <p class="subtitle" id="current-page-subtitle">
+                            <span class="ps-badge">Problem Statement: Agent Behavioral Baseline Builder</span>
+                        </p>
+                    </div>
+                </div>
+                <div class="top-header-right">
+                    <div class="stat-pill-mini">
+                        <span class="pill-label">Scenarios</span>
+                        <span class="pill-val" id="top-meta-scenarios">50</span>
+                    </div>
+                    <div class="stat-pill-mini">
+                        <span class="pill-label">Workload Clusters</span>
+                        <span class="pill-val" id="top-meta-clusters">3</span>
+                    </div>
+                    <div class="stat-pill-mini">
+                        <span class="pill-label">Proxy Health</span>
+                        <span class="pill-val text-success" id="top-meta-health">NORMAL</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- TAB PANES -->
+            <div class="tabs-wrapper">
+
+
+<!-- TAB 0 / PAGE 1: LANDING SCREEN WITH BIG FONT AB³ TITLE & OFFICIAL DESCRIPTION -->
+                <section id="tab-welcome" class="tab-pane active" style="display: block;">
+                    <div class="landing-hero-center">
+                        <div class="aegis-shield-logo-large">
+                            <svg class="custom-app-logo hero-large" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M50 8L88 24V48C88 71.2 71.8 92.4 50 98C28.2 92.4 12 71.2 12 48V24L50 8Z" fill="url(#logo-grad-hero)" stroke="#991B1B" stroke-width="3.5"/>
+                                <circle cx="50" cy="46" r="18" stroke="#D97706" stroke-width="2.5" stroke-dasharray="4 3"/>
+                                <circle cx="50" cy="46" r="8" fill="#991B1B"/>
+                                <path d="M24 52L38 52L44 34L52 64L58 42L64 52L76 52" stroke="#F59E0B" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                                <defs>
+                                    <linearGradient id="logo-grad-hero" x1="12" y1="8" x2="88" y2="98" gradientUnits="userSpaceOnUse">
+                                        <stop offset="0%" stop-color="#991B1B" stop-opacity="0.95"/>
+                                        <stop offset="100%" stop-color="#450A0A" stop-opacity="0.98"/>
+                                    </linearGradient>
+                                </defs>
+                            </svg>
+                        </div>
+
+                        <!-- BIG FONT PROJECT BRAND NAME -->
+                        <h1 class="hero-title-clean">
+                            <span class="ab3-hero-brand">AB<sup>3</sup></span>
+                        </h1>
+                        <p class="hero-subtitle-tagline">
+                            Agent Behavioral Baseline Builder
+                        </p>
+
+                        <!-- OFFICIAL PROBLEM STATEMENT DESCRIPTION CARD -->
+                        <div class="card ps-official-desc-card shadow-lg mb-4">
+                            <div class="card-body">
+                                <p class="ps-paragraph">
+                                    The <strong>Agent Behavioral Baseline Builder</strong> is an automated pre-deployment profiling and real-time behavioral drift monitoring platform for enterprise AI agents. It addresses the enterprise <em>"cold-start governance problem"</em>—where newly deployed agents operate ungoverned for weeks because security teams lack historical execution history to establish what "normal" behavior looks like.
+                                </p>
+                                <p class="ps-paragraph">
+                                    Before an agent processes its first real user request, the platform inspects its system prompt and tool definitions, using an LLM-driven workload engine to synthesize <strong>50 diverse test scenarios</strong>. It runs these scenarios in an isolated sandbox to construct a high-dimensional <strong>Behavioral Fingerprint</strong> (tool invocation frequency matrices, response length distributions, tool call transition graphs, and data access scope). In production, an OpenTelemetry-compatible proxy continuously evaluates live execution spans against this baseline, flagging statistical anomalies and triggering automated governance actions when long-term behavioral drift is detected.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="hero-cta-single">
+                            <button type="button" class="btn btn-primary btn-hero-single" id="hero-get-started-btn" onclick="window.aegisGotoTab('tab-profiler')">
+                                <span class="material-icons-round">rocket_launch</span>
+                                Get Started (Synthesize Baseline)
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+<!-- TAB 1: BEHAVIORAL PROFILER & SETUP (PAGE 2) -->
+                <section id="tab-profiler" class="tab-pane" style="display: none;">
+                    <!-- Platform Overview Banner on Page 2 with Back Button -->
+                    <div class="card shadow-lg mb-4">
+                        <div class="card-header justify-between">
+                            <div class="flex items-center gap-2">
+                                <span class="material-icons-round text-primary">route</span>
+                                <h2>Platform Overview &amp; Guide</h2>
+                            </div>
+                            <button type="button" class="btn btn-secondary btn-sm inner-back-btn" onclick="window.aegisGoHome()">
+                                <span class="material-icons-round">arrow_back</span> Back to Home
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <div class="guide-grid mb-3">
+                                <div class="card guide-card">
+                                    <div class="guide-icon-wrapper bg-purple">
+                                        <span class="material-icons-round">psychology_alt</span>
+                                    </div>
+                                    <h3>The Cold-Start Governance Challenge</h3>
+                                    <p>Newly deployed AI models operate ungoverned for weeks because security teams lack historical operational history to establish normal baseline behavior.</p>
+                                </div>
+                                <div class="card guide-card">
+                                    <div class="guide-icon-wrapper bg-blue">
+                                        <span class="material-icons-round">hub</span>
+                                    </div>
+                                    <h3>Workload Graph Profiling (50 Scenarios)</h3>
+                                    <p>AB³ generates <strong>50 synthetic test scenarios</strong> covering normal, edge-case, and error paths to extract tool call matrices, Markov graphs, and Z-score bounds.</p>
+                                </div>
+                                <div class="card guide-card">
+                                    <div class="guide-icon-wrapper bg-teal">
+                                        <span class="material-icons-round">security</span>
+                                    </div>
+                                    <h3>OpenTelemetry Governance Proxy</h3>
+                                    <p>Ingests live telemetry spans in production, evaluating anomaly scores in real-time into <strong>Normal</strong>, <strong>Warning</strong>, or <strong>Severe Alert</strong> tiers.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid-2col">
+                        <div class="card shadow-lg">
+                            <div class="card-header">
+                                <span class="material-icons-round text-primary">smart_toy</span>
+                                <h2>System Blueprint &amp; Tool Definitions</h2>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="agent-id">System Identifier</label>
+                                        <input type="text" id="agent-id" class="form-control" value="db_agent" placeholder="e.g. support_agent">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="agent-name">System Display Name</label>
+                                        <input type="text" id="agent-name" class="form-control" value="Customer DB &amp; Operations Worker">
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="system-prompt">System Prompt</label>
+                                    <textarea id="system-prompt" class="form-control" rows="4"></textarea>
+                                </div>
+
+                                <div class="tools-section">
+                                    <div class="tools-header">
+                                        <label>Tools &amp; Capabilities</label>
+                                        <button type="button" id="add-tool-btn" class="btn btn-secondary btn-sm" onclick="window.aegisAddToolRow()">
+                                            <span class="material-icons-round">add</span> Add Tool
+                                        </button>
+                                    </div>
+                                    <div id="tools-container" class="tools-list"></div>
+                                </div>
+
+                                <div class="form-actions">
+                                    <button type="button" id="profile-btn" class="btn btn-primary btn-block btn-lg" onclick="window.aegisHandleProfiling()">
+                                        <span class="material-icons-round">bolt</span>
+                                        Synthesize Behavioral Baseline (50 Scenarios)
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card shadow-lg synthesis-card-premium">
+                            <div class="card-header flex-col-align-start">
+                                <div class="flex items-center gap-2">
+                                    <span class="material-icons-round text-secondary">fact_check</span>
+                                    <h2>Baseline Synthesis &amp; Scenarios Status</h2>
+                                </div>
+                                <div class="synthesis-agent-title" id="display-name-header">Awaiting Profiling...</div>
+                            </div>
+                            <div class="card-body">
+                                <div id="profiling-progress-card" class="progress-box hidden">
+                                    <div class="progress-title">
+                                        <span id="progress-status-text">Synthesizing 50 scenarios...</span>
+                                        <span id="progress-percentage">0%</span>
+                                    </div>
+                                    <div class="progress-bar-track">
+                                        <div id="progress-bar-fill" class="progress-bar-fill" style="width: 0%;"></div>
+                                    </div>
+                                    <div class="progress-steps">
+                                        <span id="step-gen" class="p-step active">1. Scenario Synthesis</span>
+                                        <span id="step-cluster" class="p-step">2. Task Clustering</span>
+                                        <span id="step-profile" class="p-step">3. Sandbox Profiling</span>
+                                    </div>
+                                </div>
+
+                                <div class="stats-grid">
+                                    <div class="stat-badge">
+                                        <span class="stat-label">Synthesized Scenarios</span>
+                                        <span id="meta-scenarios" class="stat-value text-primary">50</span>
+                                    </div>
+                                    <div class="stat-badge">
+                                        <span class="stat-label">Workload Clusters</span>
+                                        <span id="meta-clusters" class="stat-value text-secondary">3</span>
+                                    </div>
+                                    <div class="stat-badge">
+                                        <span class="stat-label">Tools Monitored</span>
+                                        <span id="meta-tools" class="stat-value text-warning">5</span>
+                                    </div>
+                                </div>
+
+                                <h3 class="section-subtitle" id="scenarios-header-title">Synthesized Scenarios Preview</h3>
+                                <div id="scenarios-list-preview" class="scenarios-scrollable-container">
+                                    <div class="placeholder-text">Click "Synthesize Behavioral Baseline" to begin...</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+<!-- TAB 4: DIRECTED MARKOV GRAPH (PAGE 5) -->
+                <section id="tab-markov" class="tab-pane" style="display: none;">
+                    <div class="card shadow-lg">
+                        <div class="card-header">
+                            <span class="material-icons-round text-primary">hub</span>
+                            <h2>Directed Markov Transition Probability Graph</h2>
+                        </div>
+                        <div class="card-body">
+                            <p class="section-desc">
+                                Computes tool-to-tool transition probabilities \( P(T_{next} \mid T_{current}) \). Unexpected transitions indicate prompt hijacking and trigger an immediate <strong>Severe Alert</strong>.
+                            </p>
+                            <div id="markov-matrix-wrapper" class="markov-wrapper">
+                                <div class="placeholder-text">Load a baseline to visualize the Markov Transition Matrix.</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+<!-- TAB 5: WORKLOAD CLUSTERS (PAGE 6) -->
+                <section id="tab-clusters" class="tab-pane" style="display: none;">
+                    <div class="card shadow-lg">
+                        <div class="card-header">
+                            <span class="material-icons-round text-secondary">bubble_chart</span>
+                            <h2>Workload Baseline Clusters (K-Means)</h2>
+                        </div>
+                        <div class="card-body">
+                            <p class="section-desc">
+                                Scenarios are clustered by task category using K-Means. Incoming queries are routed to their nearest cluster baseline for accurate scoring.
+                            </p>
+                            <div id="clusters-display-grid" class="clusters-grid">
+                                <div class="placeholder-text">Load a baseline to view workload clusters.</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+<!-- TAB 2: REAL-TIME MONITOR (PAGE 3) -->
+                <section id="tab-monitor" class="tab-pane" style="display: none;">
+                    <div class="card sim-bar-card shadow-md">
+                        <div class="sim-bar-content">
+                            <div class="sim-info">
+                                <span class="material-icons-round icon-pulse text-success">sensors</span>
+                                <div>
+                                    <h3>AB³ Real-Time Monitor Simulator</h3>
+                                    <p class="text-muted">Stream live telemetry spans to test real-time proxy evaluation</p>
+                                </div>
+                            </div>
+                            <div class="sim-actions" style="flex-wrap:wrap; gap:8px;">
+                                <button type="button" id="sim-play-btn" class="btn btn-success" onclick="window.aegisToggleSim()">
+                                    <span class="material-icons-round">play_arrow</span>
+                                    <span id="sim-play-label">Start Traffic Simulation</span>
+                                </button>
+                                <button type="button" class="btn btn-warning" onclick="window.aegisInjectWarning()" title="Inject moderate frequency shift (0.30 Warning)">
+                                    <span class="material-icons-round">warning</span>
+                                    Inject Warning (0.35)
+                                </button>
+                                <button type="button" class="btn btn-danger" onclick="window.aegisInjectSevere()" title="Inject large parameter overflow (0.70 Severe)">
+                                    <span class="material-icons-round">report_problem</span>
+                                    Inject Severe (0.75)
+                                </button>
+                                <button type="button" id="sim-anom-btn" class="btn btn-danger" onclick="window.aegisInjectAnom()" title="Inject unregistered tool hijack (1.0 Hijack)">
+                                    <span class="material-icons-round">gavel</span>
+                                    Inject Hijack (1.00)
+                                </button>
+                                <button type="button" id="sim-drift-btn" class="btn btn-secondary" onclick="window.aegisInjectDrift()" title="Simulate sustained behavioral shift over time">
+                                    <span class="material-icons-round">trending_up</span>
+                                    Simulate Drift
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid-monitor">
+                        <div class="card shadow-lg sensor-card-premium" id="live-session-detail">
+                            <div class="card-header">
+                                <span class="material-icons-round text-primary">analytics</span>
+                                <h2>Latest Span Evaluation</h2>
+                                <span id="detail-badge" class="badge badge-normal">NORMAL</span>
+                            </div>
+                            <div class="card-body">
+                                <div class="session-meta">
+                                    <span class="text-muted">Session ID:</span> <code id="detail-session-id">--</code>
+                                </div>
+
+                                <div class="query-box">
+                                    <label>Incoming User Query</label>
+                                    <p id="detail-query-text" class="query-text">No telemetry spans ingested yet.</p>
+                                </div>
+
+                                <div class="gauge-wrapper">
+                                    <div class="gauge-header">
+                                        <span>Anomaly Score</span>
+                                        <span id="anomaly-score-text" class="score-num">0.00</span>
+                                    </div>
+                                    <div class="gauge-track">
+                                        <div id="anomaly-gauge" class="gauge-fill" style="width: 0%;"></div>
+                                    </div>
+                                    <div class="gauge-labels">
+                                        <span>0.0 (Normal)</span>
+                                        <span>0.30 (Warning)</span>
+                                        <span>0.70 (Severe)</span>
+                                        <span>1.0 (Hijack)</span>
+                                    </div>
+                                </div>
+
+                                <div class="metrics-grid">
+                                    <div class="metric-item">
+                                        <span class="m-label">Matched Cluster</span>
+                                        <span id="detail-cluster" class="m-val">#1 (Data Retrieval)</span>
+                                    </div>
+                                    <div class="metric-item">
+                                        <span class="m-label">Cosine Distance</span>
+                                        <span id="detail-freq-div" class="m-val">0.00</span>
+                                    </div>
+                                    <div class="metric-item">
+                                        <span class="m-label">Markov Penalty</span>
+                                        <span id="detail-markov-div" class="m-val">0.00</span>
+                                    </div>
+                                    <div class="metric-item">
+                                        <span class="m-label">Z-Score Bounds</span>
+                                        <span id="detail-bounds-div" class="m-val">0.00</span>
+                                    </div>
+                                </div>
+
+                                <div class="flow-wrapper">
+                                    <label>Tool Call Execution Sequence</label>
+                                    <div id="detail-flow-sequence" class="flow-sequence">
+                                        <span class="node-pill start">[START]</span>
+                                        <span class="flow-arrow">➔</span>
+                                        <span class="node-pill end">[END]</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card shadow-lg">
+                            <div class="card-header">
+                                <span class="material-icons-round text-secondary">dynamic_feed</span>
+                                <h2>Proxy Live Feed (<span id="session-count">0</span> sessions)</h2>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="telemetry-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Timestamp</th>
+                                                <th>Session ID</th>
+                                                <th>Query Task</th>
+                                                <th>Proxy Tier</th>
+                                                <th>Anomaly Score</th>
+                                                <th>Tool Calls</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="feed-tbody">
+                                            <tr>
+                                                <td colspan="6" class="text-center py-4 text-muted">Awaiting telemetry spans... Click "Start Traffic Simulation" above.</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+<!-- TAB 3: ANOMALY SEISMOGRAPH STRIP (PAGE 4) -->
+                <section id="tab-seismograph" class="tab-pane" style="display: none;">
+                    <div class="card shadow-lg">
+                        <div class="card-header">
+                            <span class="material-icons-round text-primary">show_chart</span>
+                            <h2>Running Anomaly Score Seismograph Strip</h2>
+                        </div>
+                        <div class="card-body">
+                            <p class="section-desc">
+                                Live streaming anomaly score chart across production sessions with color-coded threshold bands: <strong>Normal (&lt; 0.30)</strong>, <strong>Moderate (0.30–0.70)</strong>, and <strong>Severe (≥ 0.70)</strong>.
+                            </p>
+                            <div class="chart-container-box">
+                                <canvas id="seismograph-chart-canvas" height="110"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+<!-- TAB 6: DRIFT DETECTOR & REFRESH (PAGE 7) -->
+                <section id="tab-drift" class="tab-pane" style="display: none;">
+                    <div class="card shadow-lg">
+                        <div class="card-header">
+                            <span class="material-icons-round text-warning">auto_mode</span>
+                            <h2>Baseline Drift Detector &amp; Auto-Refresh Engine</h2>
+                        </div>
+                        <div class="card-body">
+                            <p class="section-desc">
+                                Aggregates sliding-window anomaly metrics over time. Emits a <strong>Baseline Drift Alert</strong> on sustained drift and enables 1-click baseline recalibration.
+                            </p>
+
+                            <div id="drift-status-banner" class="drift-banner banner-normal">
+                                <div class="banner-icon">
+                                    <span class="material-icons-round">check_circle</span>
+                                </div>
+                                <div class="banner-text">
+                                    <h3 id="drift-banner-title">Baseline Status: STABLE</h3>
+                                    <p id="drift-banner-desc">Sliding-window anomaly metrics are within expected parameters.</p>
+                                </div>
+                                <button type="button" id="trigger-refresh-btn" class="btn btn-primary" onclick="window.aegisRefreshBaseline()">
+                                    <span class="material-icons-round">sync</span>
+                                    Trigger Automated Baseline Refresh
+                                </button>
+                            </div>
+
+                            <div class="card mt-4">
+                                <div class="card-header">
+                                    <span class="material-icons-round text-primary">history</span>
+                                    <h3>Active &amp; Historical Drift Alerts</h3>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div class="table-responsive">
+                                        <table class="telemetry-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Alert ID</th>
+                                                    <th>Triggered At</th>
+                                                    <th>Drift Message</th>
+                                                    <th>Avg Anomaly Score</th>
+                                                    <th>Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="drift-alerts-tbody">
+                                                <tr>
+                                                    <td colspan="5" class="text-center py-4 text-muted">No drift alerts recorded.</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Backdrop overlay for mobile drawer -->
+    <div id="drawer-backdrop" class="drawer-backdrop"></div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Scripts -->
+    <script src="js/app.js?v=4.1"></script>
+</body>
+</html>

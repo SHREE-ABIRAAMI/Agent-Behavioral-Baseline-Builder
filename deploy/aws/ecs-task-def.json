@@ -1,0 +1,36 @@
+{
+  "family": "agent-baseline-builder",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "1024",
+  "memory": "2048",
+  "executionRoleArn": "arn:aws:iam::123456789012:role/ecsTaskExecutionRole",
+  "taskRoleArn": "arn:aws:iam::123456789012:role/agentBaselineTaskRole",
+  "containerDefinitions": [
+    {
+      "name": "baseline-api-proxy",
+      "image": "123456789012.dkr.ecr.us-east-1.amazonaws.com/agent-baseline-builder:latest",
+      "essential": true,
+      "portMappings": [
+        {
+          "containerPort": 8000,
+          "hostPort": 8000,
+          "protocol": "tcp"
+        }
+      ],
+      "environment": [
+        { "name": "USE_AWS", "value": "true" },
+        { "name": "DYNAMODB_REGION", "value": "us-east-1" },
+        { "name": "REDIS_HOST", "value": "agent-cache.xxx.ng.0001.use1.cache.amazonaws.com" }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/agent-baseline-builder",
+          "awslogs-region": "us-east-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      }
+    }
+  ]
+}

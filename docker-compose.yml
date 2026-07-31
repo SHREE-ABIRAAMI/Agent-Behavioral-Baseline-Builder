@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/agent_baseline
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - PORT=8000
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    volumes:
+      - ./:/usr/src/app
+    command: python run.py
+
+  streamlit:
+    build: .
+    ports:
+      - "8501:8501"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/agent_baseline
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - api
+    volumes:
+      - ./:/usr/src/app
+    command: python -m streamlit run dashboard/streamlit_app.py --server.port 8501 --server.address 0.0.0.0
+
+  postgres:
+    image: postgres:15-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=agent_baseline
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    restart: always
+
+volumes:
+  postgres_data:
