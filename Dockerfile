@@ -16,10 +16,12 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application source files
 COPY app/ ./app/
 COPY models/ ./models/
+COPY dashboard/ ./dashboard/
+COPY simulation/ ./simulation/
 COPY run.py .
 
-# Expose port for FastAPI backend
-EXPOSE 8000
+# Expose port 7860 for Hugging Face Spaces
+EXPOSE 7860
 
 # Execute server launcher script
 CMD ["python", "run.py"]

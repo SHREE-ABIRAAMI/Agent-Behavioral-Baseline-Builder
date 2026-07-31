@@ -21,7 +21,7 @@ if __name__ == "__main__":
     logger.info("Initializing baseline database schemas...")
     database.init_db()
     
-    env_port = int(os.getenv("PORT", 8000))
+    env_port = int(os.getenv("PORT", 7860))
     port = find_available_port(env_port)
     
     logger.info("==================================================")

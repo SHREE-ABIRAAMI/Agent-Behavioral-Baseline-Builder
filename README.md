@@ -1,3 +1,14 @@
+---
+title: AB3 Agent Behavioral Baseline Builder
+emoji: 🛡️
+colorFrom: red
+colorTo: yellow
+sdk: docker
+app_port: 7860
+pinned: false
+license: mit
+---
+
 # AB³ — Agent Behavioral Baseline Builder
 
 > **Automated pre-deployment profiling and real-time behavioral drift monitoring platform for enterprise AI agents.**
