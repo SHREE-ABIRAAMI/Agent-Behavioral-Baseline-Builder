@@ -25,3 +25,5 @@ models_cache/
 .idea/
 .DS_Store
 Thumbs.db
+*.pdf
+*.docx
