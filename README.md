@@ -3,8 +3,9 @@ title: AB3 Agent Behavioral Baseline Builder
 emoji: 🛡️
 colorFrom: red
 colorTo: yellow
-sdk: docker
-app_port: 7860
+sdk: streamlit
+sdk_version: 1.35.0
+app_file: app.py
 pinned: false
 license: mit
 ---
