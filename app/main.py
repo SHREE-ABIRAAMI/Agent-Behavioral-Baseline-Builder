@@ -211,13 +211,17 @@ def get_agent_baseline_endpoint(agent_id: str):
     baselines_dict = database.get_all_baselines(agent_id)
     clusters = database.get_intent_clusters(agent_id)
     
-    # Generate representative scenarios from cluster baselines
+    # Generate representative scenarios from cluster baselines (exactly 50 scenarios)
     scenarios = []
     if clusters:
-        for c in clusters:
+        num_clusters = len(clusters)
+        base_per_cluster = 50 // num_clusters
+        remainder = 50 % num_clusters
+        for idx, c in enumerate(clusters):
+            count = base_per_cluster + (1 if idx < remainder else 0)
             sample_q = c.get("sample_query") or "Fetch database record"
             tools = c.get("primary_tools") or ["read_user", "audit_log"]
-            for i in range(16):
+            for i in range(count):
                 scenarios.append({
                     "scenario_id": f"scen_{len(scenarios)+1}",
                     "category": c.get("category", "Data Retrieval"),
@@ -226,12 +230,15 @@ def get_agent_baseline_endpoint(agent_id: str):
                     "expected_tools": tools
                 })
     else:
-        # Default fallback scenarios
-        scenarios = [
-            {"scenario_id": "scen_1", "category": "Data Retrieval", "query": "Fetch customer account details for user ID USR-4910.", "tools": ["read_user", "audit_log"], "expected_tools": ["read_user", "audit_log"]},
-            {"scenario_id": "scen_2", "category": "Account Operations", "query": "Verify transaction status for reference TX-8891.", "tools": ["fetch_account", "audit_log"], "expected_tools": ["fetch_account", "audit_log"]},
-            {"scenario_id": "scen_3", "category": "Audit Logging", "query": "Log administrative compliance audit record.", "tools": ["audit_log"], "expected_tools": ["audit_log"]}
-        ]
+        # Default fallback scenarios (50 scenarios)
+        for i in range(1, 51):
+            scenarios.append({
+                "scenario_id": f"scen_{i}",
+                "category": "Data Operations" if i <= 25 else ("Boundary Checks" if i <= 35 else "Audit Logging"),
+                "query": f"Fetch customer account details for user ID USR-{4000+i}.",
+                "tools": ["read_user", "audit_log"],
+                "expected_tools": ["read_user", "audit_log"]
+            })
 
     return {
         "status": "success",
