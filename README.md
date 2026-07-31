@@ -4,6 +4,7 @@
 
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.109+-009688.svg?style=flat&logo=fastapi)](https://fastapi.tiangolo.com)
 [![Python](https://img.shields.io/badge/Python-3.10+-3776AB.svg?style=flat&logo=python)](https://www.python.org)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21722398.svg)](https://doi.org/10.5281/zenodo.21722398)
 [![Prometheus](https://img.shields.io/badge/Prometheus-OpenMetrics-E6522C.svg?style=flat&logo=prometheus)](https://prometheus.io)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg?style=flat)](LICENSE)
 [![Status](https://img.shields.io/badge/Status-Active-10b981.svg?style=flat)](#)
@@ -193,6 +194,26 @@ docker-compose up --build
 ## 📜 License & Compliance
 
 Developed for enterprise AI governance and security monitoring. Distributed under the MIT License. See [`LICENSE`](LICENSE) for details.
+
+---
+
+## 📚 Research Publication & Zenodo Citation
+
+If you reference or build upon this work, please cite the official Zenodo research publication:
+
+* **Zenodo Record:** [https://zenodo.org/records/21722398](https://zenodo.org/records/21722398)
+* **DOI Link:** [https://doi.org/10.5281/zenodo.21722398](https://doi.org/10.5281/zenodo.21722398)
+
+```bibtex
+@dataset{shree_abiraami_m_2026_21722398,
+  author       = {SHREE ABIRAAMI M},
+  title        = {Agent Behavioral Baseline Builder (AB³)},
+  year         = 2026,
+  publisher    = {Zenodo},
+  doi          = {10.5281/zenodo.21722398},
+  url          = {https://doi.org/10.5281/zenodo.21722398}
+}
+```
 
 ---
 
