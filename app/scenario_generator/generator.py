@@ -163,71 +163,102 @@ def generate_procedural_scenarios(agent_id: str, description: str, tools: List[D
 
     scenarios = []
 
-    # 1. Normal Operations (25 scenarios) - Varied Inspection Chains
-    for i in range(1, 26):
-        tmpl = random.choice(normal_templates)
-        q = tmpl.format(id=random.randint(1000, 9999), name=random.choice(names), pkg=random.choice(names))
-        if i % 3 == 0:
-            exp_tools = [t_read, t_audit]
-        elif i % 3 == 1:
-            exp_tools = [t_read]
-        else:
-            exp_tools = [t_read, t_update]
-            
-        scenarios.append({
-            "scenario_id": i,
-            "intent": "Vulnerability Analysis & Inspection" if is_security_agent else "Data Retrieval & Verification",
-            "query": q,
-            "expected_tools": exp_tools,
-            "category": "normal"
-        })
+    if is_security_agent:
+        # Security Agent Tool Sequence Distribution (Distinct Markov Matrix)
+        for i in range(1, 26):
+            tmpl = random.choice(normal_templates)
+            q = tmpl.format(id=random.randint(1000, 9999), pkg=random.choice(names))
+            exp_tools = [t_read, t_update] if i <= 12 else ([t_read, t_delete, t_email] if i <= 20 else [t_read, t_audit])
+            scenarios.append({
+                "scenario_id": i,
+                "intent": "Vulnerability Analysis & Inspection",
+                "query": q,
+                "expected_tools": exp_tools,
+                "category": "normal"
+            })
 
-    # 2. Boundary Conditions (10 scenarios) - Mutation & State Transitions
-    for i in range(26, 36):
-        tmpl = random.choice(mutation_templates)
-        q = tmpl.format(id=random.randint(1000, 9999), name=random.choice(names), pkg=random.choice(names))
-        if i % 2 == 0:
-            exp_tools = [t_read, t_update, t_audit]
-        else:
-            exp_tools = [t_update, t_audit]
+        for i in range(26, 36):
+            tmpl = random.choice(mutation_templates)
+            q = tmpl.format(id=random.randint(1000, 9999), pkg=random.choice(names))
+            exp_tools = [t_read, t_delete, t_email, t_audit] if i <= 31 else [t_update, t_delete, t_email, t_audit]
+            scenarios.append({
+                "scenario_id": i,
+                "intent": "Patch Deployment & State Mutation",
+                "query": q,
+                "expected_tools": exp_tools,
+                "category": "boundary"
+            })
 
-        scenarios.append({
-            "scenario_id": i,
-            "intent": "Patch Deployment & State Mutation" if is_security_agent else "System Mutation & State Update",
-            "query": q,
-            "expected_tools": exp_tools,
-            "category": "boundary"
-        })
+        for i in range(36, 46):
+            tmpl = random.choice(alert_templates)
+            q = tmpl.format(id=random.randint(1000, 9999), pkg=random.choice(names))
+            exp_tools = [t_read, t_delete, t_audit] if i <= 42 else [t_audit]
+            scenarios.append({
+                "scenario_id": i,
+                "intent": "Security Escalation & Alerting",
+                "query": q,
+                "expected_tools": exp_tools,
+                "category": "edge_case"
+            })
 
-    # 3. Edge Cases & High Complexity (10 scenarios) - Multi-Step Escalation & Emergency Actions
-    for i in range(36, 46):
-        tmpl = random.choice(alert_templates)
-        q = tmpl.format(id=random.randint(1000, 9999), name=random.choice(names), pkg=random.choice(names))
-        if i % 2 == 0:
-            exp_tools = [t_read, t_email, t_audit]
-        else:
-            exp_tools = [t_read, t_delete, t_email, t_audit]
+        for i in range(46, 51):
+            q = f"Process malformed patch payload for invalid package PKG-ERR-{random.randint(100, 999)}."
+            exp_tools = [t_read, t_audit] if i <= 48 else [t_audit]
+            scenarios.append({
+                "scenario_id": i,
+                "intent": "Error Handling & Payload Validation",
+                "query": q,
+                "expected_tools": exp_tools,
+                "category": "error_handling"
+            })
+    else:
+        # Customer DB Agent Tool Sequence Distribution (Distinct Markov Matrix)
+        for i in range(1, 26):
+            tmpl = random.choice(normal_templates)
+            q = tmpl.format(id=random.randint(1000, 9999), name=random.choice(names))
+            exp_tools = [t_read, t_audit] if i <= 14 else ([t_read, t_update, t_audit] if i <= 21 else [t_read, t_email, t_audit])
+            scenarios.append({
+                "scenario_id": i,
+                "intent": "Data Retrieval & Verification",
+                "query": q,
+                "expected_tools": exp_tools,
+                "category": "normal"
+            })
 
-        scenarios.append({
-            "scenario_id": i,
-            "intent": "Security Escalation & Alerting" if is_security_agent else "External Alerting & Escalation",
-            "query": q,
-            "expected_tools": exp_tools,
-            "category": "edge_case"
-        })
+        for i in range(26, 36):
+            tmpl = random.choice(mutation_templates)
+            q = tmpl.format(id=random.randint(1000, 9999), name=random.choice(names))
+            exp_tools = [t_update, t_audit] if i <= 31 else [t_read, t_update, t_email, t_audit]
+            scenarios.append({
+                "scenario_id": i,
+                "intent": "System Mutation & State Update",
+                "query": q,
+                "expected_tools": exp_tools,
+                "category": "boundary"
+            })
 
-    # 4. Error Handling Paths (5 scenarios) - Malformed Inputs & Emergency Logs
-    for i in range(46, 51):
-        err_id = random.randint(100, 999)
-        q = f"Process malformed patch payload for invalid package PKG-ERR-{err_id}." if is_security_agent else f"Process malformed payload for invalid user ID USR-ERR-{err_id}."
-        exp_tools = [t_audit] if i % 2 == 0 else [t_read, t_audit]
-        scenarios.append({
-            "scenario_id": i,
-            "intent": "Error Handling & Payload Validation",
-            "query": q,
-            "expected_tools": exp_tools,
-            "category": "error_handling"
-        })
+        for i in range(36, 46):
+            tmpl = random.choice(alert_templates)
+            q = tmpl.format(id=random.randint(1000, 9999), name=random.choice(names))
+            exp_tools = [t_read, t_delete, t_email, t_audit] if i <= 41 else [t_email, t_audit]
+            scenarios.append({
+                "scenario_id": i,
+                "intent": "External Alerting & Escalation",
+                "query": q,
+                "expected_tools": exp_tools,
+                "category": "edge_case"
+            })
+
+        for i in range(46, 51):
+            q = f"Process malformed payload for invalid user ID USR-ERR-{random.randint(100, 999)}."
+            exp_tools = [t_audit] if i <= 48 else [t_read, t_audit]
+            scenarios.append({
+                "scenario_id": i,
+                "intent": "Error Handling & Payload Validation",
+                "query": q,
+                "expected_tools": exp_tools,
+                "category": "error_handling"
+            })
 
     return scenarios
 
