@@ -812,19 +812,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!agentIdInput || !agentNameInput || !systemPromptInput) return;
 
-        window.aegisActiveBaseline = null;
-        window.aegisActiveClusters = [];
-        window.aegisActiveScenarios = [];
         window.aegisCurrentAgentId = presetKey === 'custom' ? 'custom_agent' : presetKey;
-
-        const header = document.getElementById('display-name-header');
-        if (header) header.innerText = 'Awaiting Profiling...';
 
         if (presetKey === 'custom') {
             agentIdInput.value = 'custom_agent';
             agentNameInput.value = 'Custom Agent';
             systemPromptInput.value = '';
             window.aegisRenderTools([]);
+            window.aegisActiveBaseline = null;
+            window.aegisActiveClusters = [];
+            window.aegisActiveScenarios = [];
+            const header = document.getElementById('display-name-header');
+            if (header) header.innerText = 'Awaiting Profiling...';
             window.aegisUpdateMetadataBadges(0, 0, 0);
             window.aegisRenderScenariosPreview([]);
             if (window.aegisRenderClusters) window.aegisRenderClusters([]);
@@ -838,11 +837,9 @@ document.addEventListener('DOMContentLoaded', () => {
             agentNameInput.value = preset.name;
             systemPromptInput.value = preset.system_prompt;
             window.aegisRenderTools(preset.tools);
-
-            window.aegisUpdateMetadataBadges(0, 0, preset.tools ? preset.tools.length : 0);
-            window.aegisRenderScenariosPreview([]);
-            if (window.aegisRenderClusters) window.aegisRenderClusters([]);
-            if (window.aegisRenderMarkovMatrix) window.aegisRenderMarkovMatrix({});
+            
+            // Immediately load target AI system's unique profile baseline (Markov graph, clusters, scenarios)
+            window.aegisLoadAgentProfile(presetKey);
         }
     };
 
