@@ -98,7 +98,7 @@ def health_check():
     return {"status": "ok", "service": "Agent Behavioral Baseline Builder"}
 
 @app.get("/metrics")
-def metrics():
+def metrics(request: Request):
     # Read live counts from the database
     db_agents = database.list_agents()
     agent_ids = set(["db_agent", "sec_agent"])
@@ -132,6 +132,34 @@ agent_baseline_anomalies_total {total_anomalies}
 # TYPE agent_baseline_drift_alerts_active gauge
 agent_baseline_drift_alerts_active {total_alerts}
 """
+    accept = request.headers.get("accept", "")
+    if "text/html" in accept:
+        html_content = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prometheus Metrics - AB³ Baseline Builder</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Fira+Code:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <style>
+        body {{ background: #0c0406; color: #ffffff; font-family: 'Outfit', sans-serif; padding: 30px; margin: 0; }}
+        .header-bar {{ display: flex; justify-content: space-between; align-items: center; background: rgba(30, 10, 15, 0.9); padding: 16px 24px; border-radius: 12px; border: 1px solid rgba(153, 27, 27, 0.4); margin-bottom: 24px; }}
+        .btn-back {{ display: inline-flex; align-items: center; gap: 8px; background: #991b1b; color: #ffffff; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 14px; transition: all 0.2s ease; cursor: pointer; }}
+        .btn-back:hover {{ background: #b91c1c; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(153, 27, 27, 0.5); }}
+        pre {{ background: #140709; padding: 24px; border-radius: 12px; border: 1px solid rgba(153, 27, 27, 0.3); font-family: 'Fira Code', monospace; color: #f59e0b; font-size: 14px; line-height: 1.6; overflow-x: auto; }}
+    </style>
+</head>
+<body>
+    <div class="header-bar">
+        <h2 style="margin:0; display:flex; align-items:center; gap:10px;"><span class="material-icons-round" style="color:#ef4444;">query_stats</span> Prometheus Live Metrics Endpoint</h2>
+        <a href="/" class="btn-back"><span class="material-icons-round">arrow_back</span> ← Back to Dashboard</a>
+    </div>
+    <pre>{prometheus_data}</pre>
+</body>
+</html>"""
+        return HTMLResponse(content=html_content)
+
     return Response(content=prometheus_data, media_type="text/plain")
 
 @app.get("/api/presets")

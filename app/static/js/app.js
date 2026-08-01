@@ -616,7 +616,11 @@ window.aegisSortedStates = function(transitions) {
 
 window.aegisRenderClusters = function(clusters) {
     const grid = document.getElementById('clusters-display-grid');
-    if (!grid || !clusters) return;
+    if (!grid) return;
+    if (!clusters || clusters.length === 0) {
+        grid.innerHTML = '<div class="placeholder-text" style="padding:40px; text-align:center; color:var(--text-muted); font-style:italic; grid-column: 1 / -1;">No workload clusters generated yet. Click "Synthesize Behavioral Baseline" in Module 1 to profile the target AI system.</div>';
+        return;
+    }
     grid.innerHTML = '';
 
     clusters.forEach((c, idx) => {
@@ -626,12 +630,12 @@ window.aegisRenderClusters = function(clusters) {
         card.innerHTML = `
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
                 <h3 style="font-size:16px; font-weight:700; color:#fecdd3;">Workload Cluster #${idx + 1}</h3>
-                <span class="badge badge-normal">${c.scenario_count || 15} Scenarios</span>
+                <span class="badge badge-normal">${c.scenario_count || 16} Scenarios</span>
             </div>
             <div style="font-size:14px; font-weight:600; color:#fff; margin-bottom:8px;">${c.intent || 'Data Retrieval'}</div>
             <div style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">Primary Tools: <code>${(c.primary_tools || ['read_db']).join(', ')}</code></div>
             <div style="font-size:12px; color:var(--text-secondary); background:rgba(153,27,27,0.08); padding:10px; border-radius:8px;">
-                Sample: "${c.sample_query || 'Fetch customer database record'}"
+                Sample: "${c.sample_query || 'Fetch target AI system execution trace'}"
             </div>
         `;
         grid.appendChild(card);
@@ -807,15 +811,24 @@ document.addEventListener('DOMContentLoaded', () => {
         const systemPromptInput = document.getElementById('system-prompt');
 
         if (!agentIdInput || !agentNameInput || !systemPromptInput) return;
+
+        window.aegisActiveBaseline = null;
+        window.aegisActiveClusters = [];
+        window.aegisActiveScenarios = [];
+        window.aegisCurrentAgentId = presetKey === 'custom' ? 'custom_agent' : presetKey;
+
+        const header = document.getElementById('display-name-header');
+        if (header) header.innerText = 'Awaiting Profiling...';
+
         if (presetKey === 'custom') {
             agentIdInput.value = 'custom_agent';
             agentNameInput.value = 'Custom Agent';
             systemPromptInput.value = '';
             window.aegisRenderTools([]);
-            const header = document.getElementById('display-name-header');
-            if (header) header.innerText = 'Awaiting Profiling...';
             window.aegisUpdateMetadataBadges(0, 0, 0);
             window.aegisRenderScenariosPreview([]);
+            if (window.aegisRenderClusters) window.aegisRenderClusters([]);
+            if (window.aegisRenderMarkovMatrix) window.aegisRenderMarkovMatrix({});
             return;
         }
 
@@ -825,7 +838,11 @@ document.addEventListener('DOMContentLoaded', () => {
             agentNameInput.value = preset.name;
             systemPromptInput.value = preset.system_prompt;
             window.aegisRenderTools(preset.tools);
-            window.aegisLoadAgentProfile(presetKey);
+
+            window.aegisUpdateMetadataBadges(0, 0, preset.tools ? preset.tools.length : 0);
+            window.aegisRenderScenariosPreview([]);
+            if (window.aegisRenderClusters) window.aegisRenderClusters([]);
+            if (window.aegisRenderMarkovMatrix) window.aegisRenderMarkovMatrix({});
         }
     };
 
@@ -861,20 +878,26 @@ document.addEventListener('DOMContentLoaded', () => {
                     window.aegisRenderScenariosPreview(data.scenarios);
                     window.aegisCheckDriftAlerts();
                 } else {
+                    window.aegisActiveBaseline = null;
                     const header = document.getElementById('display-name-header');
                     if (header) header.innerText = 'Awaiting Profiling...';
                     const toolCount = (data.agent && data.agent.tools) ? data.agent.tools.length : document.querySelectorAll('#tools-container .tool-row').length;
                     window.aegisUpdateMetadataBadges(0, 0, toolCount);
                     window.aegisRenderScenariosPreview([]);
+                    if (window.aegisRenderClusters) window.aegisRenderClusters([]);
+                    if (window.aegisRenderMarkovMatrix) window.aegisRenderMarkovMatrix({});
                 }
             })
             .catch(err => {
                 console.log("No baseline yet for:", agentId);
+                window.aegisActiveBaseline = null;
                 const header = document.getElementById('display-name-header');
                 if (header) header.innerText = 'Awaiting Profiling...';
                 const toolCount = document.querySelectorAll('#tools-container .tool-row').length;
                 window.aegisUpdateMetadataBadges(0, 0, toolCount);
                 window.aegisRenderScenariosPreview([]);
+                if (window.aegisRenderClusters) window.aegisRenderClusters([]);
+                if (window.aegisRenderMarkovMatrix) window.aegisRenderMarkovMatrix({});
             });
     };
 
