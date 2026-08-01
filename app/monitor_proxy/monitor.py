@@ -161,13 +161,17 @@ class TelemetryMonitor:
         w_freq, w_markov, w_bounds = 0.25, 0.55, 0.20
         combined_score = (w_freq * d_freq) + (w_markov * s_markov) + (w_bounds * s_bounds)
 
-        # Force severe alert if hijacked zero-probability transition occurred
-        if unexpected:
+        # Force severe alert if extreme parameter/response bounds overflow occurred (Z >= 3.0)
+        if s_bounds >= 0.85:
             combined_score = max(combined_score, 0.75)
+
+        # Force hijack alert if zero-probability transition occurred
+        if unexpected:
+            combined_score = max(combined_score, 1.0)
 
         combined_score = min(1.0, max(0.0, float(combined_score)))
 
-        # Assign Health Tier
+        # Assign Health Tier (normal, warning, alert)
         if combined_score < 0.30:
             health_tier = "normal"
         elif combined_score < 0.70:

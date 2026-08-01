@@ -489,43 +489,53 @@ window.aegisUpdateTelemetryDisplay = function(data, span) {
     if (detailSess) detailSess.innerText = sessId;
     if (detailQuery) detailQuery.innerText = span.query;
 
-    const score = data.anomaly_score || 0.0;
+    const score = data.anomaly_score !== undefined ? data.anomaly_score : 0.0;
     if (scoreNum) scoreNum.innerText = score.toFixed(2);
-    if (gaugeFill) gaugeFill.style.width = `${Math.min(100, score * 100)}%`;
+    if (gaugeFill) gaugeFill.style.width = `${Math.min(100, Math.max(0, score * 100))}%`;
 
-    const tier = data.health_tier || 'normal';
+    const tier = data.health_tier || (score >= 0.98 ? 'hijack' : (score >= 0.70 ? 'severe' : (score >= 0.30 ? 'warning' : 'normal')));
+    const tierDisplayMap = {
+        'normal': 'NORMAL',
+        'warning': 'WARNING',
+        'severe': 'SEVERE ALERT',
+        'hijack': 'HIJACK ALERT'
+    };
+    const tierText = tierDisplayMap[tier] || tier.toUpperCase();
+
     if (detailBadge) {
-        detailBadge.className = `badge badge-${tier}`;
-        detailBadge.innerText = tier.toUpperCase();
+        detailBadge.className = `badge badge-${tier === 'hijack' ? 'severe' : tier}`;
+        detailBadge.innerText = tierText;
     }
 
     const topProxyHealth = document.getElementById('top-meta-health');
     if (topProxyHealth) {
-        topProxyHealth.innerText = tier.toUpperCase();
-        const colorClass = (tier === 'severe' || tier === 'alert') ? 'danger' : (tier === 'warning' ? 'warning' : 'success');
+        topProxyHealth.innerText = tierText;
+        const colorClass = (tier === 'hijack' || tier === 'severe') ? 'danger' : (tier === 'warning' ? 'warning' : 'success');
         topProxyHealth.className = `pill-val text-${colorClass}`;
     }
 
     const sidebarPill = document.getElementById('sidebar-proxy-status');
     const sidebarText = document.getElementById('sidebar-proxy-status-text');
     if (sidebarPill && sidebarText) {
-        if (tier === 'severe' || tier === 'alert') {
+        if (tier === 'hijack') {
             sidebarPill.className = 'status-pill severe';
             sidebarText.innerText = 'AB³ Proxy Alert (HIJACK)';
-        } else if (tier === 'warning' || tier === 'moderate') {
+        } else if (tier === 'severe') {
+            sidebarPill.className = 'status-pill severe';
+            sidebarText.innerText = 'AB³ Proxy Alert (SEVERE)';
+        } else if (tier === 'warning') {
             sidebarPill.className = 'status-pill moderate';
-            sidebarText.innerText = 'AB³ Proxy Warning (DRIFT)';
+            sidebarText.innerText = 'AB³ Proxy Warning (MODERATE)';
         } else {
             sidebarPill.className = 'status-pill online';
-            sidebarText.innerText = 'AB³ Proxy Active (STABLE)';
+            sidebarText.innerText = 'AB³ Proxy Active (NORMAL)';
         }
     }
 
     const sensorCard = document.getElementById('live-session-detail');
     if (sensorCard) {
-        sensorCard.classList.remove('status-normal', 'status-warning', 'status-alert', 'status-severe');
-        const alertClass = (tier === 'severe' || tier === 'alert') ? 'alert' : tier;
-        sensorCard.classList.add(`status-${alertClass}`);
+        sensorCard.classList.remove('status-normal', 'status-warning', 'status-alert', 'status-severe', 'status-hijack');
+        sensorCard.classList.add(`status-${tier === 'hijack' ? 'severe' : tier}`);
     }
 
     if (detailCluster) detailCluster.innerText = `Cluster #${data.cluster_id}`;
