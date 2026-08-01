@@ -818,6 +818,13 @@ document.addEventListener('DOMContentLoaded', () => {
             agentNameInput.value = preset.name;
             systemPromptInput.value = preset.system_prompt;
             window.aegisRenderTools(preset.tools);
+            
+            // Set initial state before loading profile
+            const header = document.getElementById('display-name-header');
+            if (header) header.innerText = 'Awaiting Profiling...';
+            window.aegisUpdateMetadataBadges(0, 0, preset.tools ? preset.tools.length : 0);
+            window.aegisRenderScenariosPreview([]);
+
             window.aegisLoadAgentProfile(presetKey);
         }
     };
@@ -833,27 +840,31 @@ document.addEventListener('DOMContentLoaded', () => {
         fetch(`/api/agents/${agentId}/baseline`)
             .then(res => res.json())
             .then(data => {
-                if (data.overall && Object.keys(data.overall).length > 0) {
+                const hasScenarios = data.scenarios && data.scenarios.length > 0;
+                const hasBaseline = data.overall && Object.keys(data.overall).length > 0;
+
+                if (hasBaseline && hasScenarios) {
                     window.aegisActiveBaseline = data.overall;
                     window.aegisActiveClusters = data.clusters || [];
                     window.aegisActiveScenarios = data.scenarios || [];
 
-                    const scenarioCount = (data.scenarios && data.scenarios.length > 0) ? data.scenarios.length : 50;
-                    const clusterCount = (data.clusters && data.clusters.length > 0) ? data.clusters.length : 3;
-                    const toolCount = data.overall.tool_frequency ? Object.keys(data.overall.tool_frequency).length : 5;
+                    const scenarioCount = data.scenarios.length;
+                    const clusterCount = data.clusters ? data.clusters.length : 0;
+                    const toolCount = data.overall.tool_frequency ? Object.keys(data.overall.tool_frequency).length : (data.agent && data.agent.tools ? data.agent.tools.length : 0);
 
                     const header = document.getElementById('display-name-header');
-                    if (header) header.innerText = "Baseline Active for: " + (data.agent ? data.agent.name : agentId);
+                    if (header) header.innerText = "✔ Baseline Active for: " + (data.agent ? data.agent.name : agentId);
 
                     window.aegisUpdateMetadataBadges(scenarioCount, clusterCount, toolCount);
                     if (data.clusters) window.aegisRenderClusters(data.clusters);
                     if (data.overall.markov_transitions) window.aegisRenderMarkovMatrix(data.overall.markov_transitions);
-                    if (data.scenarios) window.aegisRenderScenariosPreview(data.scenarios);
+                    window.aegisRenderScenariosPreview(data.scenarios);
                     window.aegisCheckDriftAlerts();
                 } else {
                     const header = document.getElementById('display-name-header');
                     if (header) header.innerText = 'Awaiting Profiling...';
-                    window.aegisUpdateMetadataBadges(0, 0, 0);
+                    const toolCount = (data.agent && data.agent.tools) ? data.agent.tools.length : document.querySelectorAll('#tools-container .tool-row').length;
+                    window.aegisUpdateMetadataBadges(0, 0, toolCount);
                     window.aegisRenderScenariosPreview([]);
                 }
             })
@@ -861,7 +872,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log("No baseline yet for:", agentId);
                 const header = document.getElementById('display-name-header');
                 if (header) header.innerText = 'Awaiting Profiling...';
-                window.aegisUpdateMetadataBadges(0, 0, 0);
+                const toolCount = document.querySelectorAll('#tools-container .tool-row').length;
+                window.aegisUpdateMetadataBadges(0, 0, toolCount);
                 window.aegisRenderScenariosPreview([]);
             });
     };
