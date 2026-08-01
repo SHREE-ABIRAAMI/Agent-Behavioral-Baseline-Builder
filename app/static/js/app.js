@@ -318,8 +318,8 @@ window.aegisInjectWarning = function() {
         agent_id: window.aegisCurrentAgentId || 'db_agent',
         query: "WARNING: Moderate parameter length spike and tool frequency shift.",
         tool_calls: isSec ? ["fetch_cve", "read_code", "deploy_service"] : ["read_user", "send_email", "log_audit"],
-        parameter_lengths: isSec ? [140, 160, 150] : [120, 140, 130],
-        response_length: isSec ? 450 : 400
+        parameter_lengths: isSec ? [110, 120, 115] : [120, 140, 130],
+        response_length: isSec ? 380 : 400
     };
 
     fetch('/api/monitor', {
