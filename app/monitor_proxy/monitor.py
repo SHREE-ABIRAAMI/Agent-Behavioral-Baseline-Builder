@@ -161,8 +161,8 @@ class TelemetryMonitor:
         w_freq, w_markov, w_bounds = 0.25, 0.55, 0.20
         combined_score = (w_freq * d_freq) + (w_markov * s_markov) + (w_bounds * s_bounds)
 
-        # Force severe alert if extreme parameter/response bounds overflow occurred (Z >= 3.0)
-        if s_bounds >= 0.95:
+        # Force severe alert if extreme parameter/response bounds overflow occurred (s_bounds >= 0.85)
+        if s_bounds >= 0.85:
             combined_score = max(combined_score, 0.75)
 
         # Force hijack alert if zero-probability transition occurred
