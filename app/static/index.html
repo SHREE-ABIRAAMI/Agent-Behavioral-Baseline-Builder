@@ -420,7 +420,23 @@
 
 <!-- TAB 2: REAL-TIME MONITOR (PAGE 3) -->
                 <section id="tab-monitor" class="tab-pane" style="display: none;">
-                    <div class="card sim-bar-card shadow-md">
+                    <!-- 1. FIRST: Human-Friendly Mathematical Specification Callout Box for Anomaly Scoring -->
+                    <div class="math-callout-card" style="background: rgba(153, 27, 27, 0.08); border: 1px solid rgba(153, 27, 27, 0.3); border-radius: 10px; padding: 16px 20px; margin-bottom: 20px; font-size: 13.5px; color: #fecdd3;">
+                        <div style="font-weight: 700; color: #f59e0b; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                            <span class="material-icons-round" style="font-size: 18px;">lightbulb</span> How Anomaly Scoring Works (In Plain Words):
+                        </div>
+                        <div style="line-height: 1.6; margin-bottom: 12px; color: var(--text-secondary);">
+                            Evaluates every live telemetry span in real-time across Tool Call Frequencies, Tool Order (Markov Graph), and Parameter Length Bounds (Z-Scores).
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 8px; font-family: var(--font-mono); font-size: 12.5px; background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px;">
+                            <div><strong>1. Z-Score Deviation:</strong> Z = |Observed Value - Mean| ÷ Standard Deviation</div>
+                            <div><strong>2. Composite Anomaly Score:</strong> Combined Score = (0.25 × Tool Frequency Distance) + (0.55 × Markov Penalty) + (0.20 × Z-Score Bounds Penalty)</div>
+                            <div><strong>3. Threat Tier Bands:</strong> Normal (&lt; 0.30) | Warning (0.30 - 0.70) | Severe Alert (&ge; 0.70)</div>
+                        </div>
+                    </div>
+
+                    <!-- 2. SECOND: Telemetry Simulator Action Bar / Buttons Card -->
+                    <div class="card sim-bar-card shadow-md" style="margin-bottom: 20px;">
                         <div class="sim-bar-content">
                             <div class="sim-info">
                                 <span class="material-icons-round icon-pulse text-success">sensors</span>
@@ -451,21 +467,6 @@
                                     Simulate Drift
                                 </button>
                             </div>
-                        </div>
-                    </div>
-
-                    <!-- Human-Friendly Mathematical Specification Callout Box for Anomaly Scoring -->
-                    <div class="math-callout-card" style="background: rgba(153, 27, 27, 0.08); border: 1px solid rgba(153, 27, 27, 0.3); border-radius: 10px; padding: 16px 20px; margin-bottom: 20px; font-size: 13.5px; color: #fecdd3;">
-                        <div style="font-weight: 700; color: #f59e0b; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
-                            <span class="material-icons-round" style="font-size: 18px;">lightbulb</span> How Anomaly Scoring Works (In Plain Words):
-                        </div>
-                        <div style="line-height: 1.6; margin-bottom: 12px; color: var(--text-secondary);">
-                            Evaluates every live telemetry span in real-time across Tool Call Frequencies, Tool Order (Markov Graph), and Parameter Length Bounds (Z-Scores).
-                        </div>
-                        <div style="display: flex; flex-direction: column; gap: 8px; font-family: var(--font-mono); font-size: 12.5px; background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px;">
-                            <div><strong>1. Z-Score Deviation:</strong> Z = |Observed Value - Mean| ÷ Standard Deviation</div>
-                            <div><strong>2. Composite Anomaly Score:</strong> Combined Score = (0.25 × Tool Frequency Distance) + (0.55 × Markov Penalty) + (0.20 × Z-Score Bounds Penalty)</div>
-                            <div><strong>3. Threat Tier Bands:</strong> Normal (&lt; 0.30) | Warning (0.30 - 0.70) | Severe Alert (&ge; 0.70)</div>
                         </div>
                     </div>
 
@@ -661,6 +662,6 @@
     <div id="toast-container" class="toast-container"></div>
 
     <!-- Scripts -->
-    <script src="js/app.js?v=17.0"></script>
+    <script src="js/app.js?v=18.0"></script>
 </body>
 </html>
