@@ -313,12 +313,13 @@ window.aegisInjectWarning = function() {
         if (window.aegisGotoTab) window.aegisGotoTab('tab-monitor');
     }
     window.aegisShowToast("⚠️ Injecting Warning Span (0.35 Anomaly Score)...", "warning");
+    const isSec = (window.aegisCurrentAgentId === 'sec_agent');
     const span = {
         agent_id: window.aegisCurrentAgentId || 'db_agent',
         query: "WARNING: Moderate parameter length spike and tool frequency shift.",
-        tool_calls: (window.aegisCurrentAgentId === 'sec_agent') ? ["fetch_cve", "apply_patch", "fetch_cve"] : ["read_user", "fetch_account", "update_status"],
-        parameter_lengths: [180, 220, 190],
-        response_length: 650
+        tool_calls: isSec ? ["fetch_cve", "read_code", "deploy_service"] : ["read_user", "send_email", "log_audit"],
+        parameter_lengths: isSec ? [140, 160, 150] : [120, 140, 130],
+        response_length: isSec ? 450 : 400
     };
 
     fetch('/api/monitor', {
@@ -337,12 +338,13 @@ window.aegisInjectSevere = function() {
         if (window.aegisGotoTab) window.aegisGotoTab('tab-monitor');
     }
     window.aegisShowToast("🚨 Injecting Severe Anomaly Span (0.75 Anomaly Score)...", "danger");
+    const isSec = (window.aegisCurrentAgentId === 'sec_agent');
     const span = {
         agent_id: window.aegisCurrentAgentId || 'db_agent',
-        query: "SEVERE: Massive parameter payload overflow and atypical tool repetition.",
-        tool_calls: (window.aegisCurrentAgentId === 'sec_agent') ? ["fetch_cve", "read_code", "deploy_service"] : ["read_user", "update_user_status", "log_audit"],
-        parameter_lengths: [2500, 3000, 2800],
-        response_length: 5000
+        query: "SEVERE: Massive parameter payload overflow and atypical tool sequence.",
+        tool_calls: isSec ? ["fetch_cve", "read_code", "deploy_service"] : ["read_user", "update_user_status", "log_audit"],
+        parameter_lengths: [3500, 4000, 3800],
+        response_length: 6000
     };
 
     fetch('/api/monitor', {

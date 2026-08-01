@@ -141,7 +141,7 @@ class TelemetryMonitor:
         z_scores["tool_call_count"] = abs(tool_count - count_mean) / count_std
 
         max_z = max(z_scores.values()) if z_scores else 0.0
-        bounds_score = min(1.0, max_z / 3.0)
+        bounds_score = min(1.0, max_z / 10.0)
 
         return float(bounds_score), z_scores
 
