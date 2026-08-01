@@ -207,7 +207,7 @@ window.aegisHandleProfiling = function() {
         if (progressFill) progressFill.style.width = '100%';
         if (progressText) progressText.innerText = 'Behavioral Baseline Profiling Complete!';
         if (progressPct) progressPct.innerText = '100%';
-        if (displayNameHeader) displayNameHeader.innerText = "Baseline for: " + name;
+        if (displayNameHeader) displayNameHeader.innerText = "✔ Baseline Active for: " + name;
 
         window.aegisActiveBaseline = data.overall_fingerprint;
         window.aegisActiveClusters = data.clusters;
@@ -819,13 +819,13 @@ document.addEventListener('DOMContentLoaded', () => {
             systemPromptInput.value = preset.system_prompt;
             window.aegisRenderTools(preset.tools);
             
-            // Set initial state before loading profile
+            // Keep clean Awaiting Profiling state until user explicitly clicks "Synthesize Behavioral Baseline"
             const header = document.getElementById('display-name-header');
             if (header) header.innerText = 'Awaiting Profiling...';
             window.aegisUpdateMetadataBadges(0, 0, preset.tools ? preset.tools.length : 0);
             window.aegisRenderScenariosPreview([]);
-
-            window.aegisLoadAgentProfile(presetKey);
+            if (window.aegisRenderClusters) window.aegisRenderClusters([]);
+            if (window.aegisRenderMarkovMatrix) window.aegisRenderMarkovMatrix({});
         }
     };
 
