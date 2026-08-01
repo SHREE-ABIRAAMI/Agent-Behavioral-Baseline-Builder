@@ -362,14 +362,18 @@
                                 Computes tool-to-tool transition probabilities \( P(T_{next} \mid T_{current}) \). Unexpected transitions indicate prompt hijacking and trigger an immediate <strong>Severe Alert</strong>.
                             </p>
                             
-                            <!-- Mathematical Specification Callout Box -->
+                            <!-- Human-Friendly Mathematical Specification Callout Box -->
                             <div class="math-callout-card" style="background: rgba(153, 27, 27, 0.08); border: 1px solid rgba(153, 27, 27, 0.3); border-radius: 10px; padding: 16px 20px; margin-bottom: 20px; font-size: 13.5px; color: #fecdd3;">
                                 <div style="font-weight: 700; color: #f59e0b; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
-                                    <span class="material-icons-round" style="font-size: 18px;">functions</span> Mathematical Transition &amp; Penalty Formulas:
+                                    <span class="material-icons-round" style="font-size: 18px;">lightbulb</span> How the Markov Transition Score Works (In Plain Words):
                                 </div>
-                                <div style="display: flex; flex-wrap: wrap; gap: 24px; font-family: var(--font-mono); line-height: 1.6;">
-                                    <div><strong>1. Transition Probability:</strong> \( P(T_{nxt} \mid T_{curr}) = \frac{\text{Count}(T_{curr} \to T_{nxt})}{\sum_{T'}\text{Count}(T_{curr} \to T')} \)</div>
-                                    <div><strong>2. Markov Anomaly Score:</strong> \( S_{Markov} = 1.0 - \prod_{i=1}^{k} P(T_i \mid T_{i-1}) \quad (\text{Penalty } = 1.0 \text{ if } P=0.0) \)</div>
+                                <div style="line-height: 1.6; margin-bottom: 12px; color: var(--text-secondary);">
+                                    Calculates how often your AI agent moves from one tool to another (e.g., from <code>read_user</code> to <code>log_audit</code>). If an agent attempts an unusual or unseen tool transition (0% baseline chance), it triggers an immediate <strong>Severe Alert</strong>.
+                                </div>
+                                <div style="display: flex; flex-direction: column; gap: 8px; font-family: var(--font-mono); font-size: 12.5px; background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px;">
+                                    <div><strong>1. Transition Probability:</strong> P(Tool B | Tool A) = (Times Tool A was followed by Tool B) ÷ (Total times Tool A was used)</div>
+                                    <div><strong>2. Anomaly Penalty:</strong> Score = 1.0 - (Probability of Step 1 × Probability of Step 2 × ...)</div>
+                                    <div><strong>3. Hijack Alert:</strong> If an unseen tool path occurs (Probability = 0.00), Score = <strong>1.00 (Severe Alert)</strong></div>
                                 </div>
                             </div>
 
@@ -392,15 +396,18 @@
                                 Scenarios are clustered by task category using K-Means. Incoming queries are routed to their nearest cluster baseline for accurate scoring.
                             </p>
 
-                            <!-- Mathematical Specification Callout Box -->
+                            <!-- Human-Friendly Mathematical Specification Callout Box -->
                             <div class="math-callout-card" style="background: rgba(153, 27, 27, 0.08); border: 1px solid rgba(153, 27, 27, 0.3); border-radius: 10px; padding: 16px 20px; margin-bottom: 20px; font-size: 13.5px; color: #fecdd3;">
                                 <div style="font-weight: 700; color: #f59e0b; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
-                                    <span class="material-icons-round" style="font-size: 18px;">functions</span> Mathematical Clustering &amp; Routing Formulas:
+                                    <span class="material-icons-round" style="font-size: 18px;">lightbulb</span> How Workload Clustering Works (In Plain Words):
                                 </div>
-                                <div style="display: flex; flex-wrap: wrap; gap: 24px; font-family: var(--font-mono); line-height: 1.6;">
-                                    <div><strong>1. TF-IDF Vectorization:</strong> \( \text{TF-IDF}(t,q) = \text{TF}(t,q) \times \log\left(\frac{N}{\text{DF}(t)}\right) \)</div>
-                                    <div><strong>2. K-Means Objective (K=3):</strong> \( \arg\min_{\mathbf{S}} \sum_{i=1}^{3} \sum_{\mathbf{x} \in S_i} \|\mathbf{x} - \boldsymbol{\mu}_i\|^2 \)</div>
-                                    <div><strong>3. Cosine Routing Distance:</strong> \( D_{cos}(\mathbf{q}, \boldsymbol{\mu}_c) = 1 - \frac{\mathbf{q} \cdot \boldsymbol{\mu}_c}{\|\mathbf{q}\| \|\boldsymbol{\mu}_c\|} \)</div>
+                                <div style="line-height: 1.6; margin-bottom: 12px; color: var(--text-secondary);">
+                                    Groups 50 test scenarios into 3 intent categories (like <i>Data Retrieval</i>, <i>State Mutation</i>, and <i>Security Escalation</i>) based on prompt keywords. When a live request arrives, it is routed to its closest baseline cluster for precise scoring.
+                                </div>
+                                <div style="display: flex; flex-direction: column; gap: 8px; font-family: var(--font-mono); font-size: 12.5px; background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px;">
+                                    <div><strong>1. Keyword Weighting (TF-IDF):</strong> Weight = (Word Frequency in Query) × log(Total Scenarios ÷ Scenarios containing Word)</div>
+                                    <div><strong>2. K-Means Clustering (K=3):</strong> Minimizes total distance between scenario vectors and 3 cluster center centroids.</div>
+                                    <div><strong>3. Query Routing (Cosine Distance):</strong> Routing Distance = 1 - (Query Vector · Cluster Centroid) ÷ (|Query| × |Centroid|)</div>
                                 </div>
                             </div>
 
@@ -447,14 +454,18 @@
                         </div>
                     </div>
 
-                    <!-- Mathematical Specification Callout Box for Anomaly Scoring -->
+                    <!-- Human-Friendly Mathematical Specification Callout Box for Anomaly Scoring -->
                     <div class="math-callout-card" style="background: rgba(153, 27, 27, 0.08); border: 1px solid rgba(153, 27, 27, 0.3); border-radius: 10px; padding: 16px 20px; margin-bottom: 20px; font-size: 13.5px; color: #fecdd3;">
                         <div style="font-weight: 700; color: #f59e0b; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
-                            <span class="material-icons-round" style="font-size: 18px;">functions</span> Mathematical Real-Time Anomaly Scoring Formulas:
+                            <span class="material-icons-round" style="font-size: 18px;">lightbulb</span> How Anomaly Scoring Works (In Plain Words):
                         </div>
-                        <div style="display: flex; flex-wrap: wrap; gap: 24px; font-family: var(--font-mono); line-height: 1.6;">
-                            <div><strong>1. Z-Score Deviation:</strong> \( Z_{metric} = \frac{|x - \mu|}{\sigma}, \quad S_{Bounds} = \min\left(1.0, \frac{\max(Z)}{3.0}\right) \)</div>
-                            <div><strong>2. Composite Score:</strong> \( S_{Combined} = w_1 \cdot D_{freq} + w_2 \cdot S_{Markov} + w_3 \cdot S_{Bounds} \quad (w_1=0.25, w_2=0.55, w_3=0.20) \)</div>
+                        <div style="line-height: 1.6; margin-bottom: 12px; color: var(--text-secondary);">
+                            Evaluates every live telemetry span in real-time across Tool Call Frequencies, Tool Order (Markov Graph), and Parameter Length Bounds (Z-Scores).
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 8px; font-family: var(--font-mono); font-size: 12.5px; background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px;">
+                            <div><strong>1. Z-Score Deviation:</strong> Z = |Observed Value - Mean| ÷ Standard Deviation</div>
+                            <div><strong>2. Composite Anomaly Score:</strong> Combined Score = (0.25 × Tool Frequency Distance) + (0.55 × Markov Penalty) + (0.20 × Z-Score Bounds Penalty)</div>
+                            <div><strong>3. Threat Tier Bands:</strong> Normal (&lt; 0.30) | Warning (0.30 - 0.70) | Severe Alert (&ge; 0.70)</div>
                         </div>
                     </div>
 
@@ -581,6 +592,20 @@
                                 Aggregates sliding-window anomaly metrics over time. Emits a <strong>Baseline Drift Alert</strong> on sustained drift and enables 1-click baseline recalibration.
                             </p>
 
+                            <!-- Human-Friendly Mathematical Specification Callout Box for Drift -->
+                            <div class="math-callout-card" style="background: rgba(153, 27, 27, 0.08); border: 1px solid rgba(153, 27, 27, 0.3); border-radius: 10px; padding: 16px 20px; margin-bottom: 20px; font-size: 13.5px; color: #fecdd3;">
+                                <div style="font-weight: 700; color: #f59e0b; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                                    <span class="material-icons-round" style="font-size: 18px;">lightbulb</span> How Baseline Drift Detection Works (In Plain Words):
+                                </div>
+                                <div style="line-height: 1.6; margin-bottom: 12px; color: var(--text-secondary);">
+                                    Monitors sliding window averages of live session anomaly scores over time. If sustained operational drift occurs, it emits a <strong>Baseline Drift Alert</strong> with 1-click baseline recalibration.
+                                </div>
+                                <div style="display: flex; flex-direction: column; gap: 8px; font-family: var(--font-mono); font-size: 12.5px; background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px;">
+                                    <div><strong>1. Sliding Window Average:</strong> Average Score = (Sum of last 10 Session Anomaly Scores) ÷ 10</div>
+                                    <div><strong>2. Drift Alert Trigger:</strong> Emits Drift Alert if (Sliding Window Average &gt; 0.35) sustained over 10 sessions</div>
+                                </div>
+                            </div>
+
                             <div id="drift-status-banner" class="drift-banner banner-normal">
                                 <div class="banner-icon">
                                     <span class="material-icons-round">check_circle</span>
@@ -636,6 +661,6 @@
     <div id="toast-container" class="toast-container"></div>
 
     <!-- Scripts -->
-    <script src="js/app.js?v=11.0"></script>
+    <script src="js/app.js?v=12.0"></script>
 </body>
 </html>
