@@ -441,8 +441,11 @@
                             <div class="sim-info">
                                 <span class="material-icons-round icon-pulse text-success">sensors</span>
                                 <div>
-                                    <h3>AB³ Real-Time Monitor Simulator</h3>
-                                    <p class="text-muted">Stream live telemetry spans to test real-time proxy evaluation</p>
+                                    <div style="display:flex; align-items:center; gap:8px;">
+                                        <h3 style="margin:0;">AB³ Real-Time Monitor Simulator</h3>
+                                        <span id="sim-header-status" class="badge badge-normal" style="font-size:11px;">NORMAL</span>
+                                    </div>
+                                    <p class="text-muted" style="margin:4px 0 0 0;">Stream live telemetry spans to test real-time proxy evaluation</p>
                                 </div>
                             </div>
                             <div class="sim-actions" style="flex-wrap:wrap; gap:8px;">
@@ -662,6 +665,6 @@
     <div id="toast-container" class="toast-container"></div>
 
     <!-- Scripts -->
-    <script src="js/app.js?v=18.0"></script>
+    <script src="js/app.js?v=19.0"></script>
 </body>
 </html>
