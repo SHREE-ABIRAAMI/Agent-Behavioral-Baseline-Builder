@@ -848,8 +848,17 @@ document.addEventListener('DOMContentLoaded', () => {
             systemPromptInput.value = preset.system_prompt;
             window.aegisRenderTools(preset.tools);
             
-            // Immediately load target AI system's unique profile baseline (Markov graph, clusters, scenarios)
-            window.aegisLoadAgentProfile(presetKey);
+            // Keep clean Awaiting Profiling state until user explicitly clicks "Synthesize Behavioral Baseline"
+            window.aegisActiveBaseline = null;
+            window.aegisActiveClusters = [];
+            window.aegisActiveScenarios = [];
+
+            const header = document.getElementById('display-name-header');
+            if (header) header.innerText = 'Awaiting Profiling...';
+            window.aegisUpdateMetadataBadges(0, 0, preset.tools ? preset.tools.length : 0);
+            window.aegisRenderScenariosPreview([]);
+            if (window.aegisRenderClusters) window.aegisRenderClusters([]);
+            if (window.aegisRenderMarkovMatrix) window.aegisRenderMarkovMatrix({});
         }
     };
 
@@ -933,8 +942,14 @@ document.addEventListener('DOMContentLoaded', () => {
     setInterval(window.aegisCheckProxyHealth, 5000);
     window.aegisCheckProxyHealth();
 
-    // Auto-load initial tab based on URL hash
-    const initialHash = window.location.hash.replace('#', '') || 'welcome';
-    window.aegisGotoTab('tab-' + initialHash, true);
-    window.aegisLoadPreset('db_agent');
+    // Always start completely fresh on Home Overview (tab-welcome) in clean Awaiting Profiling state
+    if (window.location.hash && window.location.hash !== '#welcome') {
+        history.replaceState(null, '', window.location.pathname);
+    }
+    window.aegisGotoTab('tab-welcome', true);
+    
+    // Set default preset dropdown to custom and initialize clean unprofiled state
+    const presetSelect = document.getElementById('agent-preset');
+    if (presetSelect) presetSelect.value = 'custom';
+    window.aegisLoadPreset('custom');
 });
