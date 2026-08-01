@@ -96,8 +96,15 @@ window.aegisGotoTab = function(targetId, isBackNavigation = false) {
 
     window.aegisToggleDrawer(false);
 
-    if (targetId === 'tab-markov' && window.aegisActiveBaseline) {
-        window.aegisRenderMarkovMatrix(window.aegisActiveBaseline.markov_transitions);
+    if (targetId === 'tab-markov') {
+        if (window.aegisActiveBaseline && window.aegisActiveBaseline.markov_transitions) {
+            window.aegisRenderMarkovMatrix(window.aegisActiveBaseline.markov_transitions);
+        } else {
+            const wrapper = document.getElementById('markov-matrix-wrapper');
+            if (wrapper) {
+                wrapper.innerHTML = '<div class="placeholder-text" style="padding:40px; text-align:center; color:var(--text-muted); font-style:italic;">No Markov transition matrix generated yet. Click "Synthesize Behavioral Baseline" in Module 1 to profile the agent.</div>';
+            }
+        }
     } else if (targetId === 'tab-clusters') {
         window.aegisRenderClusters(window.aegisActiveClusters);
     } else if (targetId === 'tab-drift') {
@@ -818,14 +825,7 @@ document.addEventListener('DOMContentLoaded', () => {
             agentNameInput.value = preset.name;
             systemPromptInput.value = preset.system_prompt;
             window.aegisRenderTools(preset.tools);
-            
-            // Keep clean Awaiting Profiling state until user explicitly clicks "Synthesize Behavioral Baseline"
-            const header = document.getElementById('display-name-header');
-            if (header) header.innerText = 'Awaiting Profiling...';
-            window.aegisUpdateMetadataBadges(0, 0, preset.tools ? preset.tools.length : 0);
-            window.aegisRenderScenariosPreview([]);
-            if (window.aegisRenderClusters) window.aegisRenderClusters([]);
-            if (window.aegisRenderMarkovMatrix) window.aegisRenderMarkovMatrix({});
+            window.aegisLoadAgentProfile(presetKey);
         }
     };
 
