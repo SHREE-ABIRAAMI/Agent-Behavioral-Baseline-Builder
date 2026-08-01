@@ -28,31 +28,13 @@ class TelemetryMonitor:
         return -1  # Fallback to overall baseline
 
     def get_baseline_fingerprint(self, cluster_id: int) -> Dict[str, Any]:
-        """Loads cluster-specific baseline, falling back or merging with overall baseline (-1)."""
+        """Loads cluster-specific baseline, falling back to overall baseline (-1) if missing."""
         fingerprint = database.get_baseline(self.agent_id, cluster_id)
+        if fingerprint and "markov_transitions" in fingerprint and len(fingerprint["markov_transitions"]) > 0:
+            return fingerprint
+            
         overall = database.get_baseline(self.agent_id, -1)
-        
-        if not fingerprint:
-            return overall or {}
-            
-        if overall and "markov_transitions" in overall:
-            merged_transitions = dict(overall.get("markov_transitions", {}))
-            cluster_trans = fingerprint.get("markov_transitions", {})
-            for src, targets in cluster_trans.items():
-                if src not in merged_transitions:
-                    merged_transitions[src] = dict(targets)
-                else:
-                    merged = dict(merged_transitions[src])
-                    merged.update(targets)
-                    merged_transitions[src] = merged
-            fingerprint["markov_transitions"] = merged_transitions
-
-        if overall and "tool_frequency" in overall:
-            merged_freq = dict(overall.get("tool_frequency", {}))
-            merged_freq.update(fingerprint.get("tool_frequency", {}))
-            fingerprint["tool_frequency"] = merged_freq
-            
-        return fingerprint
+        return fingerprint or overall or {}
 
     def _compute_frequency_distance(self, tool_calls: List[str], base_frequency: Dict[str, float]) -> float:
         """Computes Cosine Distance of relative tool invocation frequencies."""

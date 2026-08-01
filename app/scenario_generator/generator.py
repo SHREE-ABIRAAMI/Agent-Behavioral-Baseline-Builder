@@ -101,8 +101,15 @@ Return ONLY a valid JSON array of objects with this exact structure:
     return []
 
 def generate_procedural_scenarios(agent_id: str, description: str, tools: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    """Synthesizes 50 structured test scenarios covering normal, boundary, edge-case, and error paths."""
-    tool_names = [t.get("name", "tool") for t in tools] or ["read_user", "update_user_status", "delete_user", "send_email", "log_audit"]
+    """Synthesizes 50 structured test scenarios with varied, realistic tool call transition sequences."""
+    tool_names = [t.get("name", f"tool_{i}") for i, t in enumerate(tools)] if tools else ["read_user", "update_user_status", "delete_user", "send_email", "log_audit"]
+    num_tools = len(tool_names)
+
+    t_read = tool_names[0]
+    t_update = tool_names[min(1, num_tools - 1)]
+    t_delete = tool_names[min(2, num_tools - 1)]
+    t_email = tool_names[min(3, num_tools - 1)]
+    t_audit = tool_names[-1]
 
     normal_templates = [
         "Fetch account details for user ID USR-{id}.",
@@ -129,50 +136,68 @@ def generate_procedural_scenarios(agent_id: str, description: str, tools: List[D
 
     scenarios = []
 
-    # 1. Normal Operations (25 scenarios)
+    # 1. Normal Operations (25 scenarios) - Varied Read & Inspection Chains
     for i in range(1, 26):
         tmpl = random.choice(normal_templates)
         q = tmpl.format(id=random.randint(1000, 9999), name=random.choice(names))
+        if i % 3 == 0:
+            exp_tools = [t_read, t_audit]
+        elif i % 3 == 1:
+            exp_tools = [t_read]
+        else:
+            exp_tools = [t_read, t_update]
+            
         scenarios.append({
             "scenario_id": i,
             "intent": "Data Retrieval & Verification",
             "query": q,
-            "expected_tools": [tool_names[0], tool_names[-1]] if len(tool_names) >= 2 else tool_names,
+            "expected_tools": exp_tools,
             "category": "normal"
         })
 
-    # 2. Boundary Conditions (10 scenarios)
+    # 2. Boundary Conditions (10 scenarios) - Mutation & State Transitions
     for i in range(26, 36):
         tmpl = random.choice(mutation_templates)
         q = tmpl.format(id=random.randint(1000, 9999), name=random.choice(names))
+        if i % 2 == 0:
+            exp_tools = [t_read, t_update, t_audit]
+        else:
+            exp_tools = [t_update, t_audit]
+
         scenarios.append({
             "scenario_id": i,
             "intent": "System Mutation & State Update",
             "query": q,
-            "expected_tools": [tool_names[0], tool_names[min(1, len(tool_names)-1)], tool_names[-1]],
+            "expected_tools": exp_tools,
             "category": "boundary"
         })
 
-    # 3. Edge Cases & High Complexity (10 scenarios)
+    # 3. Edge Cases & High Complexity (10 scenarios) - Multi-Step Escalation & Delete/Email
     for i in range(36, 46):
         tmpl = random.choice(alert_templates)
         q = tmpl.format(id=random.randint(1000, 9999), name=random.choice(names))
+        if i % 2 == 0:
+            exp_tools = [t_read, t_email, t_audit]
+        else:
+            exp_tools = [t_read, t_delete, t_email, t_audit]
+
         scenarios.append({
             "scenario_id": i,
             "intent": "External Alerting & Escalation",
             "query": q,
-            "expected_tools": [tool_names[0], tool_names[min(3, len(tool_names)-1)], tool_names[-1]],
+            "expected_tools": exp_tools,
             "category": "edge_case"
         })
 
-    # 4. Error Handling Paths (5 scenarios)
+    # 4. Error Handling Paths (5 scenarios) - Audit Direct & Emergency Validation
     for i in range(46, 51):
         q = f"Process malformed payload for invalid user ID USR-ERR-{random.randint(100, 999)}."
+        exp_tools = [t_audit] if i % 2 == 0 else [t_read, t_audit]
         scenarios.append({
             "scenario_id": i,
             "intent": "Error Handling & Validation",
             "query": q,
-            "expected_tools": [tool_names[-1]],
+            "expected_tools": exp_tools,
             "category": "error_handling"
         })
 
