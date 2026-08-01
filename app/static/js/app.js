@@ -638,11 +638,15 @@ window.aegisUpdateMetadataBadges = function(scenarios, clusters, tools) {
     const metaClusters = document.getElementById('meta-clusters');
     const metaTools = document.getElementById('meta-tools');
 
-    if (topScenarios) topScenarios.innerText = "50";
-    if (topClusters) topClusters.innerText = clusters || 3;
-    if (metaScenarios) metaScenarios.innerText = "50";
-    if (metaClusters) metaClusters.innerText = clusters || 3;
-    if (metaTools) metaTools.innerText = tools || 5;
+    const sVal = (scenarios !== undefined && scenarios !== null) ? scenarios : 0;
+    const cVal = (clusters !== undefined && clusters !== null) ? clusters : 0;
+    const tVal = (tools !== undefined && tools !== null) ? tools : 0;
+
+    if (topScenarios) topScenarios.innerText = sVal;
+    if (topClusters) topClusters.innerText = cVal;
+    if (metaScenarios) metaScenarios.innerText = sVal;
+    if (metaClusters) metaClusters.innerText = cVal;
+    if (metaTools) metaTools.innerText = tVal;
 };
 
 window.aegisRenderScenariosPreview = function(scenarios) {
@@ -801,6 +805,10 @@ document.addEventListener('DOMContentLoaded', () => {
             agentNameInput.value = 'Custom Agent';
             systemPromptInput.value = '';
             window.aegisRenderTools([]);
+            const header = document.getElementById('display-name-header');
+            if (header) header.innerText = 'Awaiting Profiling...';
+            window.aegisUpdateMetadataBadges(0, 0, 0);
+            window.aegisRenderScenariosPreview([]);
             return;
         }
 
@@ -825,22 +833,37 @@ document.addEventListener('DOMContentLoaded', () => {
         fetch(`/api/agents/${agentId}/baseline`)
             .then(res => res.json())
             .then(data => {
-                if (data.overall) {
+                if (data.overall && Object.keys(data.overall).length > 0) {
                     window.aegisActiveBaseline = data.overall;
                     window.aegisActiveClusters = data.clusters || [];
                     window.aegisActiveScenarios = data.scenarios || [];
 
-                    const scenarioCount = data.scenarios ? data.scenarios.length : 50;
-                    const clusterCount = data.clusters ? data.clusters.length : 3;
+                    const scenarioCount = (data.scenarios && data.scenarios.length > 0) ? data.scenarios.length : 50;
+                    const clusterCount = (data.clusters && data.clusters.length > 0) ? data.clusters.length : 3;
                     const toolCount = data.overall.tool_frequency ? Object.keys(data.overall.tool_frequency).length : 5;
+
+                    const header = document.getElementById('display-name-header');
+                    if (header) header.innerText = "Baseline Active for: " + (data.agent ? data.agent.name : agentId);
 
                     window.aegisUpdateMetadataBadges(scenarioCount, clusterCount, toolCount);
                     if (data.clusters) window.aegisRenderClusters(data.clusters);
                     if (data.overall.markov_transitions) window.aegisRenderMarkovMatrix(data.overall.markov_transitions);
+                    if (data.scenarios) window.aegisRenderScenariosPreview(data.scenarios);
                     window.aegisCheckDriftAlerts();
+                } else {
+                    const header = document.getElementById('display-name-header');
+                    if (header) header.innerText = 'Awaiting Profiling...';
+                    window.aegisUpdateMetadataBadges(0, 0, 0);
+                    window.aegisRenderScenariosPreview([]);
                 }
             })
-            .catch(err => console.log("No baseline yet for:", agentId));
+            .catch(err => {
+                console.log("No baseline yet for:", agentId);
+                const header = document.getElementById('display-name-header');
+                if (header) header.innerText = 'Awaiting Profiling...';
+                window.aegisUpdateMetadataBadges(0, 0, 0);
+                window.aegisRenderScenariosPreview([]);
+            });
     };
 
     window.aegisCheckProxyHealth = function() {
