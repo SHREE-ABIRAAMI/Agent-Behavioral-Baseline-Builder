@@ -812,14 +812,12 @@ document.addEventListener('DOMContentLoaded', () => {
         .then(res => res.json())
         .then(data => {
             window.aegisPresets = data;
-            const presetSelect = document.getElementById('agent-preset');
-            if (presetSelect) window.aegisLoadPreset('db_agent');
         })
         .catch(err => console.error("Failed to load presets:", err));
 
-    const presetSelect = document.getElementById('agent-preset');
-    if (presetSelect) {
-        presetSelect.addEventListener('change', (e) => {
+    const agentPresetDropdown = document.getElementById('agent-preset');
+    if (agentPresetDropdown) {
+        agentPresetDropdown.addEventListener('change', (e) => {
             window.aegisLoadPreset(e.target.value);
         });
     }
@@ -958,7 +956,6 @@ document.addEventListener('DOMContentLoaded', () => {
     window.aegisGotoTab('tab-welcome', true);
     
     // Set default preset dropdown to custom and initialize clean unprofiled state
-    const presetSelect = document.getElementById('agent-preset');
-    if (presetSelect) presetSelect.value = 'custom';
+    if (agentPresetDropdown) agentPresetDropdown.value = 'custom';
     window.aegisLoadPreset('custom');
 });
