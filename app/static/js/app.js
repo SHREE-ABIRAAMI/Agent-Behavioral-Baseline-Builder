@@ -159,23 +159,27 @@ window.aegisHandleProfiling = function() {
     const systemPromptInput = document.getElementById('system-prompt');
     const toolsContainer = document.getElementById('tools-container');
 
-    if (!agentIdInput || !agentNameInput || !systemPromptInput) return;
-    const agentId = agentIdInput.value.trim();
-    const name = agentNameInput.value.trim();
-    const systemPrompt = systemPromptInput.value.trim();
+    let agentId = agentIdInput ? agentIdInput.value.trim() : 'db_agent';
+    let name = agentNameInput ? agentNameInput.value.trim() : 'Customer DB Worker';
+    let systemPrompt = systemPromptInput ? systemPromptInput.value.trim() : 'You are a database management agent executing tools.';
+
+    if (!agentId) agentId = 'custom_agent';
+    if (!name) name = 'Custom Agent';
+    if (!systemPrompt) systemPrompt = 'You are a custom AI agent managing operational workflows and tool calls.';
 
     const tools = [];
     if (toolsContainer) {
         toolsContainer.querySelectorAll('.tool-row').forEach(r => {
-            const tName = r.querySelector('.t-name').value.trim();
-            const tDesc = r.querySelector('.t-desc').value.trim();
+            const tName = r.querySelector('.t-name') ? r.querySelector('.t-name').value.trim() : '';
+            const tDesc = r.querySelector('.t-desc') ? r.querySelector('.t-desc').value.trim() : '';
             if (tName) tools.push({ name: tName, description: tDesc });
         });
     }
 
-    if (!agentId || !name || !systemPrompt) {
-        window.aegisShowToast("Please complete system ID, display name, and system prompt.", "warning");
-        return;
+    if (tools.length === 0) {
+        tools.push({ name: "read_user", description: "Fetch account details" });
+        tools.push({ name: "update_user_status", description: "Update account status" });
+        tools.push({ name: "log_audit", description: "Log audit trail" });
     }
 
     window.aegisCurrentAgentId = agentId;
@@ -220,9 +224,9 @@ window.aegisHandleProfiling = function() {
         window.aegisActiveClusters = data.clusters;
         window.aegisActiveScenarios = data.scenarios;
 
-        window.aegisUpdateMetadataBadges(data.scenarios_count, data.clusters.length, tools.length);
+        window.aegisUpdateMetadataBadges(data.scenarios_count, data.clusters ? data.clusters.length : 3, tools.length);
         window.aegisRenderScenariosPreview(data.scenarios);
-        window.aegisRenderClusters(data.clusters);
+        if (data.clusters) window.aegisRenderClusters(data.clusters);
         if (data.overall_fingerprint && data.overall_fingerprint.markov_transitions) {
             window.aegisRenderMarkovMatrix(data.overall_fingerprint.markov_transitions);
         }
@@ -234,6 +238,7 @@ window.aegisHandleProfiling = function() {
         window.aegisShowToast("Error profiling blueprint.", "danger");
     });
 };
+window.aegisProfileAgent = window.aegisHandleProfiling;
 
 window.aegisToggleSim = function() {
     const simPlayBtn = document.getElementById('sim-play-btn');
@@ -303,6 +308,7 @@ window.aegisSendRandomSimSpan = function() {
 };
 
 window.aegisInjectWarning = function() {
+    if (window.aegisGotoTab) window.aegisGotoTab('tab-monitor');
     window.aegisShowToast("⚠️ Injecting Warning Span (0.35 Anomaly Score)...", "warning");
     const span = {
         agent_id: window.aegisCurrentAgentId,
@@ -323,6 +329,7 @@ window.aegisInjectWarning = function() {
 };
 
 window.aegisInjectSevere = function() {
+    if (window.aegisGotoTab) window.aegisGotoTab('tab-monitor');
     window.aegisShowToast("🚨 Injecting Severe Anomaly Span (0.75 Anomaly Score)...", "danger");
     const span = {
         agent_id: window.aegisCurrentAgentId,
@@ -343,6 +350,7 @@ window.aegisInjectSevere = function() {
 };
 
 window.aegisInjectAnom = function() {
+    if (window.aegisGotoTab) window.aegisGotoTab('tab-monitor');
     window.aegisShowToast("🛑 Injecting Hijack Threat (1.00 Anomaly Score)...", "danger");
     const span = {
         agent_id: window.aegisCurrentAgentId,
@@ -363,6 +371,7 @@ window.aegisInjectAnom = function() {
 };
 
 window.aegisInjectDrift = function() {
+    if (window.aegisGotoTab) window.aegisGotoTab('tab-monitor');
     window.aegisShowToast("📉 Injecting sustained behavioral drift spans...", "warning");
     for (let i = 0; i < 5; i++) {
         setTimeout(() => {
