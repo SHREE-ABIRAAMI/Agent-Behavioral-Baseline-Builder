@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ab3-agent-baseline-builder
+  namespace: default
+  labels:
+    app: ab3-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: ab3-app
+  template:
+    metadata:
+      labels:
+        app: ab3-app
+    spec:
+      containers:
+      - name: ab3-container
+        image: <AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/agent-baseline-builder:latest
+        ports:
+        - containerPort: 8000
+        env:
+        - name: PORT
+          value: "8000"
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ab3-service
+  namespace: default
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 8000
+    protocol: TCP
+  selector:
+    app: ab3-app

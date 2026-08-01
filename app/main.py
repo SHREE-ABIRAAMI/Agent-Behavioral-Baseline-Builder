@@ -353,3 +353,9 @@ async def websocket_endpoint(websocket: WebSocket):
 
 # Static files for HTML client
 app.mount("/", StaticFiles(directory="app/static", html=True), name="static")
+
+try:
+    from mangum import Mangum
+    handler = Mangum(app, lifespan="off")
+except ImportError:
+    handler = None

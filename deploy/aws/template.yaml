@@ -1,0 +1,24 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: AB3 Agent Behavioral Baseline Builder on AWS Lambda Serverless Container
+
+Resources:
+  AB3ApiFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      PackageType: Image
+      MemorySize: 1024
+      Timeout: 30
+      ImageConfig:
+        Command: ["app.main.handler"]
+      Events:
+        HttpApi:
+          Type: HttpApi
+          Properties:
+            Path: /{proxy+}
+            Method: ANY
+
+Outputs:
+  AB3ApiUrl:
+    Description: HTTP API Gateway endpoint URL for AB3
+    Value: !Sub "https://${ServerlessHttpApi}.execute-api.${AWS::Region}.amazonaws.com"
