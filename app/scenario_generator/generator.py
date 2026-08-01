@@ -101,9 +101,12 @@ Return ONLY a valid JSON array of objects with this exact structure:
     return []
 
 def generate_procedural_scenarios(agent_id: str, description: str, tools: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    """Synthesizes 50 structured test scenarios with varied, realistic tool call transition sequences."""
+    """Synthesizes 50 structured test scenarios with domain-matched query templates and tool chains."""
     tool_names = [t.get("name", f"tool_{i}") for i, t in enumerate(tools)] if tools else ["read_user", "update_user_status", "delete_user", "send_email", "log_audit"]
     num_tools = len(tool_names)
+    desc_lower = (agent_id + " " + description + " " + " ".join(tool_names)).lower()
+
+    is_security_agent = any(k in desc_lower for k in ["sec", "cve", "patch", "code", "vulnerab", "deploy"])
 
     t_read = tool_names[0]
     t_update = tool_names[min(1, num_tools - 1)]
@@ -111,35 +114,59 @@ def generate_procedural_scenarios(agent_id: str, description: str, tools: List[D
     t_email = tool_names[min(3, num_tools - 1)]
     t_audit = tool_names[-1]
 
-    normal_templates = [
-        "Fetch account details for user ID USR-{id}.",
-        "Retrieve profile information for username '{name}'.",
-        "Check operational status of user '{name}'.",
-        "Verify system logs for account USR-{id}.",
-        "Display read-only summary for customer '{name}'.",
-    ]
-    mutation_templates = [
-        "Update status to active for user USR-{id}.",
-        "Suspend account '{name}' due to billing policy update.",
-        "Change operational permissions for user USR-{id}.",
-        "Purge temporary record USR-{id} from secondary index.",
-        "Deactivate customer account '{name}' as requested.",
-    ]
-    alert_templates = [
-        "Send security alert email regarding user USR-{id}.",
-        "Notify operations team about status change for '{name}'.",
-        "Dispatch notification email to user '{name}'.",
-        "Trigger high-priority alert log for USR-{id}.",
-        "Email verification code to customer '{name}'.",
-    ]
-    names = ["johndoe", "alice_smith", "bob_runner", "charlie_db", "guest_user", "admin_test"]
+    if is_security_agent:
+        normal_templates = [
+            "Scan vulnerability database for advisory CVE-{id}.",
+            "Inspect source code repository '{pkg}' for security flaws.",
+            "Verify operational health and test coverage for service '{pkg}'.",
+            "Retrieve static code analysis metrics for microservice '{pkg}'.",
+            "Check deployment logs for security pipeline '{pkg}'.",
+        ]
+        mutation_templates = [
+            "Apply security hotfix patch to repository '{pkg}'.",
+            "Deploy updated container image for microservice '{pkg}'.",
+            "Update vulnerability severity classification for CVE-{id}.",
+            "Execute regression test suite on patched service '{pkg}'.",
+            "Roll back deployment for service '{pkg}' due to failed health check.",
+        ]
+        alert_templates = [
+            "Trigger high-priority patch deployment for CVE-{id}.",
+            "Notify DevOps security team regarding critical flaw in '{pkg}'.",
+            "Dispatch emergency incident report for microservice '{pkg}'.",
+            "Trigger automated vulnerability scan on repository '{pkg}'.",
+            "Deploy hotfix patch and notify operations team for CVE-{id}.",
+        ]
+        names = ["auth-service", "payment-gateway", "ingress-proxy", "user-db-api", "crypto-vault"]
+    else:
+        normal_templates = [
+            "Fetch account details for user ID USR-{id}.",
+            "Retrieve profile information for username '{name}'.",
+            "Check operational status of user '{name}'.",
+            "Verify system logs for account USR-{id}.",
+            "Display read-only summary for customer '{name}'.",
+        ]
+        mutation_templates = [
+            "Update status to active for user USR-{id}.",
+            "Suspend account '{name}' due to billing policy update.",
+            "Change operational permissions for user USR-{id}.",
+            "Purge temporary record USR-{id} from secondary index.",
+            "Deactivate customer account '{name}' as requested.",
+        ]
+        alert_templates = [
+            "Send security alert email regarding user USR-{id}.",
+            "Notify operations team about status change for '{name}'.",
+            "Dispatch notification email to user '{name}'.",
+            "Trigger high-priority alert log for USR-{id}.",
+            "Email verification code to customer '{name}'.",
+        ]
+        names = ["johndoe", "alice_smith", "bob_runner", "charlie_db", "guest_user", "admin_test"]
 
     scenarios = []
 
-    # 1. Normal Operations (25 scenarios) - Varied Read & Inspection Chains
+    # 1. Normal Operations (25 scenarios) - Varied Inspection Chains
     for i in range(1, 26):
         tmpl = random.choice(normal_templates)
-        q = tmpl.format(id=random.randint(1000, 9999), name=random.choice(names))
+        q = tmpl.format(id=random.randint(1000, 9999), name=random.choice(names), pkg=random.choice(names))
         if i % 3 == 0:
             exp_tools = [t_read, t_audit]
         elif i % 3 == 1:
@@ -149,7 +176,7 @@ def generate_procedural_scenarios(agent_id: str, description: str, tools: List[D
             
         scenarios.append({
             "scenario_id": i,
-            "intent": "Data Retrieval & Verification",
+            "intent": "Vulnerability Analysis & Inspection" if is_security_agent else "Data Retrieval & Verification",
             "query": q,
             "expected_tools": exp_tools,
             "category": "normal"
@@ -158,7 +185,7 @@ def generate_procedural_scenarios(agent_id: str, description: str, tools: List[D
     # 2. Boundary Conditions (10 scenarios) - Mutation & State Transitions
     for i in range(26, 36):
         tmpl = random.choice(mutation_templates)
-        q = tmpl.format(id=random.randint(1000, 9999), name=random.choice(names))
+        q = tmpl.format(id=random.randint(1000, 9999), name=random.choice(names), pkg=random.choice(names))
         if i % 2 == 0:
             exp_tools = [t_read, t_update, t_audit]
         else:
@@ -166,16 +193,16 @@ def generate_procedural_scenarios(agent_id: str, description: str, tools: List[D
 
         scenarios.append({
             "scenario_id": i,
-            "intent": "System Mutation & State Update",
+            "intent": "Patch Deployment & State Mutation" if is_security_agent else "System Mutation & State Update",
             "query": q,
             "expected_tools": exp_tools,
             "category": "boundary"
         })
 
-    # 3. Edge Cases & High Complexity (10 scenarios) - Multi-Step Escalation & Delete/Email
+    # 3. Edge Cases & High Complexity (10 scenarios) - Multi-Step Escalation & Emergency Actions
     for i in range(36, 46):
         tmpl = random.choice(alert_templates)
-        q = tmpl.format(id=random.randint(1000, 9999), name=random.choice(names))
+        q = tmpl.format(id=random.randint(1000, 9999), name=random.choice(names), pkg=random.choice(names))
         if i % 2 == 0:
             exp_tools = [t_read, t_email, t_audit]
         else:
@@ -183,19 +210,20 @@ def generate_procedural_scenarios(agent_id: str, description: str, tools: List[D
 
         scenarios.append({
             "scenario_id": i,
-            "intent": "External Alerting & Escalation",
+            "intent": "Security Escalation & Alerting" if is_security_agent else "External Alerting & Escalation",
             "query": q,
             "expected_tools": exp_tools,
             "category": "edge_case"
         })
 
-    # 4. Error Handling Paths (5 scenarios) - Audit Direct & Emergency Validation
+    # 4. Error Handling Paths (5 scenarios) - Malformed Inputs & Emergency Logs
     for i in range(46, 51):
-        q = f"Process malformed payload for invalid user ID USR-ERR-{random.randint(100, 999)}."
+        err_id = random.randint(100, 999)
+        q = f"Process malformed patch payload for invalid package PKG-ERR-{err_id}." if is_security_agent else f"Process malformed payload for invalid user ID USR-ERR-{err_id}."
         exp_tools = [t_audit] if i % 2 == 0 else [t_read, t_audit]
         scenarios.append({
             "scenario_id": i,
-            "intent": "Error Handling & Validation",
+            "intent": "Error Handling & Payload Validation",
             "query": q,
             "expected_tools": exp_tools,
             "category": "error_handling"
